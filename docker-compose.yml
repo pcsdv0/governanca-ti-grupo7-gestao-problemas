@@ -1,0 +1,33 @@
+# Sobe o sistema completo (web + PostgreSQL) com: docker compose up --build
+# Acesse http://localhost:8000. Dados do banco ficam no volume "dados_postgres".
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gestao_problemas
+      POSTGRES_USER: gestao_problemas
+      POSTGRES_PASSWORD: senha_local_docker
+    volumes:
+      - dados_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gestao_problemas -d gestao_problemas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Valores apenas para uso local. Não reutilize em produção.
+      DEBUG: "False"
+      SECRET_KEY: chave-local-docker-nao-usar-em-producao
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgres://gestao_problemas:senha_local_docker@db:5432/gestao_problemas
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dados_postgres:

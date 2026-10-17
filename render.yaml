@@ -1,0 +1,38 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec).
+# ATENÇÃO: o PostgreSQL gratuito expira 30 dias após a criação.
+# Só aplicar este blueprint por volta de 28/10/2026 (ver README e docs/decisoes.md).
+databases:
+  - name: gestao-problemas-db
+    plan: free
+    databaseName: gestao_problemas
+    user: gestao_problemas
+
+services:
+  - type: web
+    name: gestao-problemas
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.7
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gestao-problemas-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: USAR_HTTPS
+        value: "True"
+      - key: WEB_CONCURRENCY
+        value: "2"
+      # Preenchidos manualmente no painel do Render (não ficam no repositório).
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
