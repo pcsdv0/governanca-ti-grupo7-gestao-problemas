@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block titulo %}Início{% endblock %}
+
+{% block conteudo %}
+<h1 class="h3">Olá, {{ user.get_full_name|default:user.username }}</h1>
+<p class="text-body-secondary">Você entrou com o perfil <strong>{{ user.get_perfil_display }}</strong>.</p>
+
+<div class="alert alert-info">
+  <i class="bi bi-cone-striped"></i>
+  Esta é a versão esqueleto do sistema. Os módulos abaixo serão implementados nas próximas entregas.
+</div>
+
+{# TODO F3: substituir pelos atalhos reais de cada módulo, filtrados pelo perfil. #}
+<div class="row row-cols-1 row-cols-md-3 g-3">
+  <div class="col"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><i class="bi bi-exclamation-triangle"></i> Incidentes</h2>
+    <p class="small text-body-secondary mb-0">Restaurar o serviço rápido, com solução de contorno. (Entrega 2)</p>
+  </div></div></div>
+  <div class="col"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><i class="bi bi-search"></i> Problemas</h2>
+    <p class="small text-body-secondary mb-0">Investigar a causa raiz e corrigir de forma definitiva. (Entrega 2)</p>
+  </div></div></div>
+  <div class="col"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><i class="bi bi-list-check"></i> Ações corretivas</h2>
+    <p class="small text-body-secondary mb-0">Acompanhar as correções até o encerramento. (Entrega 2)</p>
+  </div></div></div>
+  <div class="col"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><i class="bi bi-journal-bookmark"></i> Erros conhecidos (KEDB)</h2>
+    <p class="small text-body-secondary mb-0">Causa e solução de contorno documentadas. (Entrega 3)</p>
+  </div></div></div>
+  <div class="col"><div class="card h-100"><div class="card-body">
+    <h2 class="h6"><i class="bi bi-bar-chart"></i> Dashboard</h2>
+    <p class="small text-body-secondary mb-0">Indicadores para gestores. (Entrega 3)</p>
+  </div></div></div>
+</div>
+{% endblock %}
