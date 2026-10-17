@@ -1,0 +1,21 @@
+# Configuração do Ruff (lint e formatação).
+# Uso: `ruff check .` (lint), `ruff check . --fix` (corrige o que der) e `ruff format .` (formata).
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+# E/W: estilo PEP 8 | F: erros (Pyflakes) | I: ordem dos imports | B: bugs comuns
+# UP: sintaxe moderna | DJ: boas práticas Django
+select = ["E", "W", "F", "I", "B", "UP", "DJ"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "contas", "sistemas", "incidentes", "problemas", "acoes", "kedb", "dashboard"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint.per-file-ignores]
+# Lista de títulos de issues: linhas longas são aceitáveis.
+"scripts/configurar_github.py" = ["E501"]
