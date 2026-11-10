@@ -1,6 +1,11 @@
-# TODO Função 2 (F2): modelo Incidente, cadastro, edição e listagem (Entrega 2).
-# Nomes padronizados: docs/convencoes.md. Modelo de dados: docs/modelo-de-dados.md.
+from django.urls import path
+
+from . import views
 
 app_name = "incidentes"
 
-urlpatterns = []
+urlpatterns = [
+    path("", views.listar, name="listar"),
+    path("novo/", views.cadastrar, name="cadastrar"),
+    path("<int:pk>/editar/", views.editar, name="editar"),
+]

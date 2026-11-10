@@ -1,4 +1,3 @@
-# TODO Funções 1 e 2 (F1/F2): modelos Problema, CausaRaiz e HistóricoStatus;
-# ciclo de status (choices em problemas/constantes.py).
-# Nomes padronizados: docs/convencoes.md. Modelo de dados: docs/modelo-de-dados.md.
-
+# A escrita de Problemas ocorre pelos serviços transacionais e pelas views.
+# Não registrar no admin sem reproduzir as autorizações, transições e vínculos.
+# O histórico está disponível em Problema.history e no contexto da view detalhe.

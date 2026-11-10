@@ -2,7 +2,7 @@
 
 Sistema web de **Gestão de Problemas** baseado no ITIL 4 e no COBIT 2019 (DSS02 - Gerenciar solicitações de serviço e incidentes; DSS03 - Gerenciar problemas). Projeto da disciplina de Governança de TI, 6º período, UNINASSAU.
 
-> **Situação atual: esqueleto.** Já funcionam o login/logout, a página inicial protegida, o usuário com os 4 perfis e o controle de acesso por perfil. Os módulos de negócio (incidentes, problemas, causa raiz, ações corretivas, KEDB e dashboard) estão criados **vazios** e serão implementados nas Entregas 2 e 3 (ver [Funções](#funções-da-equipe) e as issues do repositório).
+> **Situação atual:** o **backend F2 do MVP** está implementado: Sistemas, Incidentes, Problemas, CausaRaiz, criação/atualização de ErroConhecido, Ações Corretivas, encerramento condicionado à conclusão das ações e auditoria. As telas de Problemas, CausaRaiz, ErroConhecido e Ações Corretivas continuam com a F3; suas rotas públicas aguardam essa integração. Pesquisa na KEDB, alerta de recorrência, dashboard e validação final de encerramento são da versão final. O escopo exato está em [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md).
 
 ## O problema que resolvemos
 
@@ -21,7 +21,7 @@ Relação central: **um Problema se relaciona com vários Incidentes.**
 
 | Camada | Tecnologia |
 |---|---|
-| Linguagem | Python 3.12+ (desenvolvido e testado com 3.13) |
+| Linguagem | Python 3.12+ (esta entrega validada com 3.14.9) |
 | Framework | **Django 5.2.18 (LTS)** |
 | Interface | Templates Django, Bootstrap 5 (CDN), HTMX (opcional), Chart.js (dashboard) |
 | Banco | SQLite (desenvolvimento) / PostgreSQL (produção, via `DATABASE_URL` + dj-database-url) |
@@ -39,13 +39,13 @@ Versões fixadas em [requirements.txt](requirements.txt). Motivos das escolhas e
 ├── config/              # Configurações do projeto (settings, urls, wsgi)
 ├── contas/              # F1 - Usuário, perfis, login e controle de acesso (pronto)
 │   └── permissoes.py    #      perfil_requerido e PerfilRequeridoMixin
-├── sistemas/            # F2 - Sistemas de TI (vazio)
-├── incidentes/          # F2 - Incidentes (vazio)
-├── problemas/           # F1/F2 - Problemas, causa raiz, histórico (vazio)
+├── sistemas/            # F2 - Sistemas: modelo, formulários, views, templates, admin e testes
+├── incidentes/          # F2 - Cadastro, edição, filtros, auditoria e FK para Problema
+├── problemas/           # F1/F2 - Problemas, causa raiz e histórico; telas com F3
 │   └── constantes.py    #      status do Problema
-├── acoes/               # F2 - Ações corretivas (vazio)
+├── acoes/               # F2 - Ações corretivas e histórico; telas com F3
 │   └── constantes.py    #      status da Ação corretiva
-├── kedb/                # F2 - Base de erros conhecidos (vazio, Entrega 3)
+├── kedb/                # F2 - Registro de ErroConhecido (MVP); pesquisa na Entrega 3
 ├── dashboard/           # F3 - Indicadores (vazio, Entrega 3)
 ├── templates/           # base.html, inicio.html, 403.html, registration/login.html
 ├── static/              # CSS próprio
@@ -93,14 +93,88 @@ docker compose exec web python manage.py createsuperuser   # em outro terminal, 
 
 Acesse <http://localhost:8000>. Para parar: `Ctrl+C` e `docker compose down` (os dados ficam no volume; `docker compose down -v` apaga o banco).
 
+## Sistemas (RF04)
+
+Após configurar o ambiente e executar `python manage.py migrate`, entre no sistema e acesse <http://127.0.0.1:8000/sistemas/>. A navegação global continua sob responsabilidade da F3; o módulo pode ser aberto diretamente pelo endereço.
+
+- **Listar:** `/sistemas/`.
+- **Cadastrar:** `/sistemas/novo/`.
+- **Editar:** `/sistemas/<id>/editar/`, pelo botão **Editar** na lista.
+- **Acesso:** Gestor de TI e superusuário. Anônimos seguem para login; Suporte, Desenvolvedor e Responsável pelo sistema recebem 403 nessas operações.
+- **Dados obrigatórios:** nome (até 200 caracteres), descrição e Responsável pelo sistema. Dados inválidos mantêm o formulário aberto com mensagens de erro. GET exibe páginas; POST grava com proteção CSRF.
+- **Seleção do responsável:** exige usuário com o perfil `RESPONSAVEL_SISTEMA`, tanto no formulário da aplicação quanto no admin. A validação no servidor também rejeita outros perfis enviados diretamente por POST, inclusive quando o operador é superusuário. A associação não altera as permissões do usuário.
+- **Auditoria:** cadastro e edição registram valores, data e autor autenticado. Para conferir, entre em `/admin/`, abra o Sistema e seu **Histórico**. O admin mantém `is_staff`, permissões Django e a restrição de perfil; superusuário tem acesso. Não há exclusão disponível.
+
+Para uma conferência manual: cadastre um Sistema, confira os dados na listagem, edite o nome ou responsável e verifique as duas versões no histórico. Entre com outro perfil e confirme o acesso negado. Os testes automatizados cobrem esses fluxos, os quatro perfis, superusuário, campos obrigatórios, referências inválidas, CSRF e autoria do histórico.
+
+O vínculo Sistema–Responsável explicita responsabilidades. O controle por perfil restringe as operações, e o histórico oferece rastreabilidade para demonstrar governança no trabalho.
+
+## Incidentes (RF05/RF06)
+
+Após executar `python manage.py migrate`, acesse <http://127.0.0.1:8000/incidentes/>. Cadastre antes um Sistema como Gestor de TI ou superusuário.
+
+- **Cadastro:** `/incidentes/novo/`, permitido ao Suporte. Título, descrição, data e hora da ocorrência, impacto e Sistema afetado são obrigatórios. O servidor atribui o usuário autenticado como autor.
+- **Impacto:** Baixo (efeito limitado, serviço principal disponível), Médio (degradação relevante ou indisponibilidade parcial) e Alto (serviço essencial indisponível ou operação amplamente afetada), conforme confirmado pela F2.
+- **Edição:** `/incidentes/<id>/editar/`. Suporte edita os próprios registros; Gestor de TI edita qualquer registro. A edição permite corrigir os campos do cadastro e preserva o autor original.
+- **Consulta:** Suporte, Desenvolvedor e Gestor de TI consultam todos os incidentes. Responsável pelo sistema consulta somente os incidentes dos sistemas associados a ele.
+- **Filtros:** Sistema, vínculo com Problema (Todos / Com vínculo / Sem vínculo) e período por datas De/Até, opcionais e combináveis. Os dias inicial e final são incluídos integralmente no fuso America/Recife. Filtros inválidos exibem erros.
+- **Superusuário:** mantém a exceção existente para todas as operações.
+- **Auditoria:** histórico de valores, data e editor em cada cadastro/edição; disponível pelo ORM (`incidente.history.all()`). Incidentes não é exposto no admin nesta etapa.
+- **Segurança:** CSRF, validação no servidor, 403 para edição sem permissão e 404 para registro inexistente. GET não grava. Não há exclusão.
+
+Para conferir: registre um Incidente como Suporte, filtre por Sistema e pelo dia da ocorrência, edite com o próprio autor e com um Gestor e verifique a preservação de `registrado_por` e os editores em `history_user`. Outro usuário Suporte deve receber 403 ao tentar editar esse registro.
+
+A FK opcional para `problemas.Problema` e o filtro por vínculo estão implementados. O vínculo é feito pelos serviços/views de Problemas (RF07), com tela pendente da F3. Um Incidente vinculado não pode trocar para outro Sistema na edição comum; seu autor original e vínculo são preservados. Veja [docs/modelo-de-dados.md](docs/modelo-de-dados.md).
+
+Os templates mínimos reaproveitam a estrutura visual existente. Os links na página inicial e o requisito de acesso em até três cliques serão integrados com a F3.
+
+## Problemas — backend implementado, telas com a F3
+
+Nesta etapa, a F2 implementou o backend de Problemas por solicitação expressa, sem alterar a divisão geral da equipe abaixo.
+
+- Suporte abre um Problema a partir de um ou mais Incidentes do mesmo Sistema e vincula outros Incidentes.
+- A abertura usa status Registrado, responsável não atribuído e prioridade não atribuída.
+- Gestor de TI atribui um Desenvolvedor e prioridade Baixa, Média ou Alta.
+- Desenvolvedor e Gestor avançam na sequência Registrado → Em investigação → Erro conhecido → Em correção → Resolvido.
+- Gestor de TI encerra a partir de Resolvido somente quando existe pelo menos uma AçãoCorretiva e todas estão Concluídas. Superusuário também precisa atender à regra. Após encerramento, novas ações e alterações de status das ações são bloqueadas. Não há saltos, reabertura, transferência, desvinculação ou exclusão.
+- Consulta inclui contagem de incidentes, CausaRaiz, ErroConhecido, ações, histórico de status e linha do tempo de alterações. Responsável pelo sistema consulta somente seus sistemas.
+- Modelos, migrations, serviços transacionais, formulários e views estão implementados e testáveis sem telas finais.
+
+**Acesso:** `/problemas/`, `/acoes/` e `/kedb/` ainda não têm rotas públicas. A F3 deve entregar os templates e ativar os includes documentados em [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md). Não há API REST nem escrita desses módulos pelo admin.
+
+No PowerShell, na raiz do projeto:
+
+```powershell
+$env:DEBUG = "True"
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py test problemas incidentes acoes kedb
+.\.venv\Scripts\python.exe manage.py runserver
+```
+
+A aplicação permite conferir o filtro novo em `/incidentes/`. Os testes de Problemas verificam as views usando templates em memória exclusivos dos testes. O contrato da F3 detalha campos, contextos, nomes de URL e permissões.
+
+## CausaRaiz, ErroConhecido e Ações Corretivas — backend do MVP
+
+- **RF15:** qualquer Desenvolvedor cadastra ou atualiza uma CausaRaiz por Problema, com descrição e análise dos 5 Porquês em texto.
+- **RF17:** qualquer Desenvolvedor cadastra ou atualiza um ErroConhecido por Problema, com sintoma, causa e solução de contorno. Salvar causa ou erro não muda automaticamente o status do Problema.
+- **RF20:** Desenvolvedor e Gestor criam AçãoCorretiva com descrição, responsável Desenvolvedor e prazo como data. O status inicial é Aberta; não há restrição adicional de data.
+- **RF21:** qualquer Desenvolvedor avança a ação por Aberta → Em andamento → Concluída, sem saltos ou retornos. A edição de descrição, prazo e responsável não é oferecida nesta etapa.
+- **RF23/RF24:** os três modelos usam django-simple-history, com autor, data e valores. O detalhe de Problema reúne os registros e seus históricos, respeitando o escopo por Sistema.
+- A exceção de superusuário preserva as validações de negócio. Não há exclusão.
+
+RF17 pertence ao MVP, conforme o planejamento da AV2. Somente a consulta/pesquisa global na KEDB (RF18) fica para a versão final. O registro também pode ser consultado no detalhe autorizado do Problema.
+
 ## Testes e lint
 
 ```bash
+python manage.py check                         # configuração do Django
 python manage.py test                          # testes
 ruff check .                                   # lint
-ruff format .                                  # formata o código
+ruff format --check .                          # confere a formatação
 python manage.py makemigrations --check --dry-run   # confere se falta migration
 ```
+
+Para testar os módulos desta entrega: `python manage.py test sistemas incidentes problemas acoes kedb`. Se precisar formatar, passe ao `ruff format` somente os arquivos alterados.
 
 O GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) roda lint, `manage.py check`, a checagem de migrations e os testes a cada push e pull request.
 
@@ -157,18 +231,24 @@ Responsáveis e backups em [docs/EQUIPE.md](docs/EQUIPE.md).
 
 - [docs/convencoes.md](docs/convencoes.md): perfis, status e entidades (**fonte da verdade**)
 - [docs/arquitetura.md](docs/arquitetura.md): visão geral, diagrama e decisões técnicas
-- [docs/modelo-de-dados.md](docs/modelo-de-dados.md): entidades e relação central (rascunho)
+- [docs/modelo-de-dados.md](docs/modelo-de-dados.md): estrutura implementada de Sistemas, Incidentes e Problemas e pendências de integração
 - [docs/decisoes.md](docs/decisoes.md): registro de decisões e pendências
 - [docs/EQUIPE.md](docs/EQUIPE.md): funções, responsáveis e backups
+- [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md): requisitos F2 do MVP e distinção da versão final
+- [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md): contrato das views, formulários, contextos e ativação das telas
 - [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits e pull requests
 
 ## O que já existe e o que falta
 
-| Pronto (esqueleto) | A implementar |
+| Pronto | A implementar |
 |---|---|
-| Projeto Django configurado (dev, Docker, Render) | Incidentes, Sistemas (Entrega 2) |
-| Usuário com perfil e admin | Problemas, causa raiz, ciclo de status, histórico (Entrega 2) |
-| Login, logout e página inicial protegida | Ações corretivas (Entrega 2) |
-| Controle de acesso por perfil, com testes | KEDB, alerta de recorrência (Entrega 3) |
+| Projeto Django configurado (dev, Docker, Render) | Telas de Problemas, CausaRaiz, ErroConhecido e Ações Corretivas (F3) |
+| Usuário com perfil e admin | Integração visual e teste no navegador |
+| Login, logout e página inicial protegida | Navegação final por perfil (F3) |
+| Controle de acesso por perfil, com testes | Pesquisa na KEDB e alerta de recorrência (Entrega 3) |
 | Choices de status do Problema e da Ação corretiva | Dashboard e indicadores, aprovação de encerramento (Entrega 3) |
 | CI, lint, modelos de PR/issue, documentação inicial | Dados de demonstração |
+| Sistemas (RF04): cadastro, edição, listagem, admin, auditoria e testes | Navegação com a F3 |
+| Incidentes: cadastro, edição, filtros por Sistema/período/vínculo e auditoria | Testes de aceitação e demonstração com telas (F3/F6) |
+| Problemas: backend, vínculo, atribuição, ciclo até Encerrado, contagem e histórico | Validação do Responsável pelo sistema no encerramento (RF13, versão final) |
+| CausaRaiz, ErroConhecido (RF17), Ações Corretivas e auditoria | Consulta/pesquisa global da KEDB (RF18, versão final) |

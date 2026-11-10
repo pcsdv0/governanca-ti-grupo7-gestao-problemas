@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block titulo %}Incidentes{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Incidentes</h1>
+  {% if pode_cadastrar %}
+  <a class="btn btn-primary" href="{% url 'incidentes:cadastrar' %}">Registrar Incidente</a>
+  {% endif %}
+</div>
+<form method="get" class="card card-body mb-3">
+  <p class="small text-body-secondary">O período inclui os dias inicial e final completos (America/Recife).</p>
+  {{ form.non_field_errors }}
+  <div class="row g-3 align-items-end">
+    {% for field in form %}
+    <div class="col-md">
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}
+      <div class="text-danger" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="col-md-auto">
+      <button type="submit" class="btn btn-primary">Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'incidentes:listar' %}">Limpar</a>
+    </div>
+  </div>
+</form>
+{% if form.errors %}
+<div class="alert alert-danger" role="alert">Confira os filtros para consultar os incidentes.</div>
+{% elif incidentes %}
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">Incidente</th>
+        <th scope="col">Ocorrência</th>
+        <th scope="col">Impacto</th>
+        <th scope="col">Sistema afetado</th>
+        <th scope="col">Registrado por</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for incidente in incidentes %}
+      <tr>
+        <td><strong>{{ incidente.titulo }}</strong><br>{{ incidente.descricao|linebreaksbr }}</td>
+        <td>{{ incidente.data_ocorrencia|date:"d/m/Y H:i:s" }}</td>
+        <td>{{ incidente.get_impacto_display }}</td>
+        <td>{{ incidente.sistema }}</td>
+        <td>{{ incidente.registrado_por }}</td>
+        <td>
+          {% if incidente.pode_editar %}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'incidentes:editar' incidente.pk %}"
+             aria-label="Editar {{ incidente.titulo }}">Editar</a>
+          {% else %}
+          <span class="text-body-secondary">Somente consulta</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-body-secondary">Nenhum incidente encontrado.</p>
+{% endif %}
+{% endblock %}

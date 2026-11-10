@@ -1,6 +1,12 @@
-# TODO Função 2 (F2): modelo AçãoCorretiva (choices em acoes/constantes.py).
-# Nomes padronizados: docs/convencoes.md. Modelo de dados: docs/modelo-de-dados.md.
+"""Rotas de Ações Corretivas, aguardando as telas da F3 em config.urls."""
+
+from django.urls import path
+
+from . import views
 
 app_name = "acoes"
 
-urlpatterns = []
+urlpatterns = [
+    path("problema/<int:problema_pk>/nova/", views.cadastrar, name="cadastrar"),
+    path("<int:pk>/status/", views.alterar_status, name="alterar_status"),
+]

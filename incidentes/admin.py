@@ -1,3 +1,2 @@
-# TODO Função 2 (F2): modelo Incidente, cadastro, edição e listagem (Entrega 2).
-# Nomes padronizados: docs/convencoes.md. Modelo de dados: docs/modelo-de-dados.md.
-
+# O cadastro e a edição de Incidentes usam as views de incidentes/urls.py.
+# O modelo não é exposto no admin nesta etapa; a auditoria usa HistoricalRecords.

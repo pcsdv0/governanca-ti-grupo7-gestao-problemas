@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+<h1 class="h3 mb-3">{{ titulo }}</h1>
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="alert alert-danger" role="alert">Não foi possível salvar. Confira os campos abaixo.</div>
+      {% endif %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+        <div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+        <div class="text-danger" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'incidentes:listar' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
