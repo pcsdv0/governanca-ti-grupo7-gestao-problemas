@@ -33,7 +33,7 @@ def cadastrar(request, problema_pk):
         except ValidationError as exc:
             adicionar_erros(form, exc)
         else:
-            messages.success(request, "AçãoCorretiva criada com sucesso.")
+            messages.success(request, "Ação Corretiva criada com sucesso.")
             return redirect("problemas:detalhe", pk=problema.pk)
     return render(
         request,
@@ -71,6 +71,6 @@ def alterar_status(request, pk):
             "form": form,
             "problema": acao.problema,
             "acao": acao,
-            "titulo": "Alterar status da AçãoCorretiva",
+            "titulo": "Alterar status da Ação Corretiva",
         },
     )
