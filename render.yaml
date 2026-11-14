@@ -29,6 +29,9 @@ services:
         value: "True"
       - key: WEB_CONCURRENCY
         value: "2"
+      # Carrega os dados de demonstração no primeiro deploy (ver build.sh).
+      - key: CARREGAR_DEMO
+        value: "True"
       # Preenchidos manualmente no painel do Render (não ficam no repositório).
       - key: DJANGO_SUPERUSER_USERNAME
         sync: false
