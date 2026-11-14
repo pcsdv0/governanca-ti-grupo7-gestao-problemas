@@ -2,7 +2,29 @@
 
 Sistema web de **Gestão de Problemas** baseado no ITIL 4 e no COBIT 2019 (DSS02 - Gerenciar solicitações de serviço e incidentes; DSS03 - Gerenciar problemas). Projeto da disciplina de Governança de TI, 6º período, UNINASSAU.
 
-> **Situação atual:** o **backend F2 do MVP** está implementado: Sistemas, Incidentes, Problemas, CausaRaiz, criação/atualização de ErroConhecido, Ações Corretivas, encerramento condicionado à conclusão das ações e auditoria. As telas de Problemas, CausaRaiz, ErroConhecido e Ações Corretivas continuam com a F3; suas rotas públicas aguardam essa integração. Pesquisa na KEDB, alerta de recorrência, dashboard e validação final de encerramento são da versão final. O escopo exato está em [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md).
+> **Situação atual (Entrega 2 · MVP, 13/11/2026):** o MVP está **completo e navegável**. Todos os requisitos marcados como MVP no planejamento (RF01, RF02, RF04 a RF07, RF09 a RF12, RF15, RF17, RF20, RF21, RF23 e RF24) têm backend e tela: Usuários, Sistemas, Incidentes, Problemas, CausaRaiz, ErroConhecido, Ações Corretivas e histórico de auditoria, com navegação por perfil e dados de demonstração. Pesquisa na KEDB (RF18), alerta de recorrência (RF29), dashboard (RF25/RF26) e validação do Responsável pelo sistema no encerramento (RF13) são da versão final. O escopo exato está em [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md).
+
+## Demonstração rápida
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env          # no PowerShell: copy .env.example .env
+python manage.py migrate
+python manage.py carregar_demo
+python manage.py runserver
+```
+
+Acesse <http://127.0.0.1:8000>. Usuários de demonstração (senha `demo1234`):
+
+| Login | Nome | Perfil |
+|---|---|---|
+| `suporte` / `suporte2` | Ana Lima / João Ferreira | Suporte |
+| `dev` / `dev2` | Carla Mendes / Rafael Souza | Desenvolvedor |
+| `gestor` | Marcos Oliveira | Gestor de TI |
+| `responsavel` | Patrícia Rocha | Responsável pelo sistema (Sistema de Matrícula e Portal do Aluno) |
+| `responsavel2` | Bruno Almeida | Responsável pelo sistema (E-mail institucional) |
+
+O comando `carregar_demo` grava tudo pelos serviços do backend (mesmas regras, permissões e auditoria do uso real) e só carrega dados se o banco ainda não tiver Incidentes. Ele cria 3 Problemas: **PRB-001** (Sistema de Matrícula, em correção, 5 ocorrências), **PRB-002** (Portal do Aluno, em investigação) e **PRB-003** (E-mail institucional, ciclo completo até Encerrado), além de 4 Incidentes sem Problema para demonstrar a abertura. Roteiro de demonstração em [docs/roteiro-demonstracao.md](docs/roteiro-demonstracao.md); telas em [docs/telas/](docs/telas/).
 
 ## O problema que resolvemos
 
@@ -37,17 +59,18 @@ Versões fixadas em [requirements.txt](requirements.txt). Motivos das escolhas e
 ```
 .
 ├── config/              # Configurações do projeto (settings, urls, wsgi)
-├── contas/              # F1 - Usuário, perfis, login e controle de acesso (pronto)
-│   └── permissoes.py    #      perfil_requerido e PerfilRequeridoMixin
+├── contas/              # F1 - Usuário, perfis, login, controle de acesso e telas de Usuários (RF02)
+│   ├── permissoes.py    #      perfil_requerido e PerfilRequeridoMixin
+│   └── templatetags/    #      F3 - filtros de interface (códigos INC/PRB, cores, perfil)
 ├── sistemas/            # F2 - Sistemas: modelo, formulários, views, templates, admin e testes
 ├── incidentes/          # F2 - Cadastro, edição, filtros, auditoria e FK para Problema
-├── problemas/           # F1/F2 - Problemas, causa raiz e histórico; telas com F3
+├── problemas/          # F1/F2/F3 - Problemas, causa raiz, histórico, telas e carregar_demo
 │   └── constantes.py    #      status do Problema
-├── acoes/               # F2 - Ações corretivas e histórico; telas com F3
+├── acoes/               # F2/F3 - Ações corretivas, histórico e telas
 │   └── constantes.py    #      status da Ação corretiva
-├── kedb/                # F2 - Registro de ErroConhecido (MVP); pesquisa na Entrega 3
+├── kedb/                # F2/F3 - Registro de ErroConhecido (MVP); pesquisa na Entrega 3
 ├── dashboard/           # F3 - Indicadores (vazio, Entrega 3)
-├── templates/           # base.html, inicio.html, 403.html, registration/login.html
+├── templates/           # base.html (barra lateral por perfil), inicio.html, 403.html, login
 ├── static/              # CSS próprio
 ├── docs/                # Documentação do projeto
 ├── scripts/             # configurar_github.py (configuração inicial do GitHub)
@@ -128,7 +151,11 @@ A FK opcional para `problemas.Problema` e o filtro por vínculo estão implement
 
 Os templates mínimos reaproveitam a estrutura visual existente. Os links na página inicial e o requisito de acesso em até três cliques serão integrados com a F3.
 
-## Problemas — backend implementado, telas com a F3
+## Usuários (RF02)
+
+O Gestor de TI cadastra e edita Usuários em **Cadastros → Usuários** (`/contas/usuarios/`), definindo nome, login, e-mail, senha inicial e perfil. A edição permite trocar o perfil e inativar o acesso, sem exclusão. Os demais perfis recebem 403. O admin do Django continua disponível para o superusuário.
+
+## Problemas, CausaRaiz, ErroConhecido e Ações Corretivas — telas integradas
 
 Nesta etapa, a F2 implementou o backend de Problemas por solicitação expressa, sem alterar a divisão geral da equipe abaixo.
 
@@ -140,7 +167,7 @@ Nesta etapa, a F2 implementou o backend de Problemas por solicitação expressa,
 - Consulta inclui contagem de incidentes, CausaRaiz, ErroConhecido, ações, histórico de status e linha do tempo de alterações. Responsável pelo sistema consulta somente seus sistemas.
 - Modelos, migrations, serviços transacionais, formulários e views estão implementados e testáveis sem telas finais.
 
-**Acesso:** `/problemas/`, `/acoes/` e `/kedb/` ainda não têm rotas públicas. A F3 deve entregar os templates e ativar os includes documentados em [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md). Não há API REST nem escrita desses módulos pelo admin.
+**Acesso:** menu **Problemas** (`/problemas/`) e **Ações corretivas** (`/acoes/`). Na lista de Incidentes, o Suporte marca os Incidentes sem vínculo e clica em **Abrir Problema com os selecionados**. O detalhe do Problema reúne a barra do ciclo de status, o botão de avanço para o próximo status (conforme o perfil) e as abas Incidentes vinculados, Causa raiz, Erro conhecido, Ações corretivas e Histórico. As telas seguem o contrato de [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md). Não há API REST nem escrita desses módulos pelo admin.
 
 No PowerShell, na raiz do projeto:
 
@@ -151,7 +178,7 @@ $env:DEBUG = "True"
 .\.venv\Scripts\python.exe manage.py runserver
 ```
 
-A aplicação permite conferir o filtro novo em `/incidentes/`. Os testes de Problemas verificam as views usando templates em memória exclusivos dos testes. O contrato da F3 detalha campos, contextos, nomes de URL e permissões.
+Os testes de `problemas/test_backend.py` e `problemas/test_mvp.py` verificam as views com templates em memória; `problemas/test_telas.py` percorre o fluxo completo com os templates reais e as rotas de `config/urls.py`.
 
 ## CausaRaiz, ErroConhecido e Ações Corretivas — backend do MVP
 
@@ -236,19 +263,21 @@ Responsáveis e backups em [docs/EQUIPE.md](docs/EQUIPE.md).
 - [docs/EQUIPE.md](docs/EQUIPE.md): funções, responsáveis e backups
 - [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md): requisitos F2 do MVP e distinção da versão final
 - [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md): contrato das views, formulários, contextos e ativação das telas
+- [docs/roteiro-demonstracao.md](docs/roteiro-demonstracao.md): roteiro da demonstração do MVP
+- [docs/auditoria-entrega2.md](docs/auditoria-entrega2.md): auditoria planejamento × sistema da Entrega 2
+- [docs/entregas/](docs/entregas/): documento da Entrega 2 (Word e PDF)
 - [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits e pull requests
 
 ## O que já existe e o que falta
 
-| Pronto | A implementar |
+| Pronto (MVP) | A implementar (versão final, 23/11) |
 |---|---|
-| Projeto Django configurado (dev, Docker, Render) | Telas de Problemas, CausaRaiz, ErroConhecido e Ações Corretivas (F3) |
-| Usuário com perfil e admin | Integração visual e teste no navegador |
-| Login, logout e página inicial protegida | Navegação final por perfil (F3) |
-| Controle de acesso por perfil, com testes | Pesquisa na KEDB e alerta de recorrência (Entrega 3) |
-| Choices de status do Problema e da Ação corretiva | Dashboard e indicadores, aprovação de encerramento (Entrega 3) |
-| CI, lint, modelos de PR/issue, documentação inicial | Dados de demonstração |
-| Sistemas (RF04): cadastro, edição, listagem, admin, auditoria e testes | Navegação com a F3 |
-| Incidentes: cadastro, edição, filtros por Sistema/período/vínculo e auditoria | Testes de aceitação e demonstração com telas (F3/F6) |
-| Problemas: backend, vínculo, atribuição, ciclo até Encerrado, contagem e histórico | Validação do Responsável pelo sistema no encerramento (RF13, versão final) |
-| CausaRaiz, ErroConhecido (RF17), Ações Corretivas e auditoria | Consulta/pesquisa global da KEDB (RF18, versão final) |
+| Projeto Django configurado (dev, Docker, Render) | Dashboard e indicadores com Chart.js (RF25, RF26) |
+| Login, logout, perfis e controle de acesso (RF01) | Alerta de recorrência (RF29) |
+| Usuários: cadastro, edição e perfil pelo Gestor de TI (RF02) | Pesquisa por palavra-chave na KEDB (RF18) |
+| Sistemas (RF04) | Validação do Responsável pelo sistema no encerramento (RF13) |
+| Incidentes com filtros, seleção e abertura de Problema (RF05 a RF07, RF09) | Atualização dos diagramas e documentação final |
+| Problemas: atribuição, ciclo de status, detalhe e contagem (RF10 a RF12) | |
+| CausaRaiz (RF15), ErroConhecido (RF17), Ações Corretivas (RF20, RF21) | |
+| Histórico de status e linha do tempo de auditoria (RF23, RF24) | |
+| Navegação por perfil (barra lateral), dados de demonstração e testes das telas | |

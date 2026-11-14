@@ -53,9 +53,9 @@ Escolhas técnicas: título com até 200 caracteres, referências com `PROTECT` 
 
 ## Pendências
 
-- [ ] Integrar a navegação dos módulos na página inicial com a F3, atendendo ao requisito da AV2 de acesso às telas principais em até três cliques.
+- [x] Integrar a navegação dos módulos na página inicial com a F3, atendendo ao requisito da AV2 de acesso às telas principais em até três cliques.
 
-- [ ] Integrar as telas de Problemas com a F3 conforme `integracao-problemas-f3.md`.
+- [x] Integrar as telas de Problemas com a F3 conforme `integracao-problemas-f3.md`.
 - [x] Integrar Ações Corretivas e sua validação de conclusão para o encerramento de Problemas (backend F2 do MVP).
 - [ ] Nome do sistema (hoje aparece como "Gestão de Problemas").
 - [ ] Formato da Entrega 1 exigido pela professora (documento, modelo, extensão).
@@ -104,3 +104,16 @@ Escolhas técnicas: referências com `PROTECT`; status e FK de Problema fora dos
 O detalhe do Problema reúne os dados e seus históricos em uma linha do tempo. As rotas continuam aguardando as telas da F3. A decisão anterior de bloquear todo encerramento enquanto faltava Ações Corretivas é substituída pela validação funcional acima. Não foram implementados pesquisa global na KEDB, alerta de recorrência, dashboard, reabertura ou validação final de encerramento.
 
 Migrations novas: `problemas/0002_causaraiz_historicalcausaraiz.py`, `acoes/0001_initial.py` e `kedb/0001_initial.py`. Dependências Python permanecem fixadas e inalteradas.
+
+
+## Integração das telas (F3) e fechamento do MVP — 13/11/2026
+
+| Decisão | Aplicação | Motivo |
+|---|---|---|
+| Layout com barra lateral escura e navegação por perfil | `templates/base.html` e `static/css/estilo.css` | Seguir os protótipos das Figuras 4 a 7 do planejamento e manter as telas principais a até três cliques |
+| Códigos exibidos INC-001, PRB-001 e AC-001, derivados do `pk` | Filtro `codigo` em `contas/templatetags/interface.py` | Os protótipos identificam Incidentes e Problemas por código; sem campo novo no banco |
+| Avanço de status por botão "Avançar para …" com o próximo status da sequência | Detalhe do Problema e das Ações | Reforça a regra de sequência sem saltos; o serviço continua sendo quem valida |
+| RF02 com telas próprias para o Gestor de TI | `contas/views.py`, `contas/forms.py` e templates em `contas/templates/contas/` | RF02 é MVP no planejamento (Tabela 3); antes só existia pelo admin do Django |
+| Lista global de Ações Corretivas, com filtro por status e responsável | `acoes:listar` | Protótipo da Figura 6; respeita o escopo do Responsável pelo sistema |
+| Dados de demonstração pelo comando `carregar_demo`, gravando pelos serviços | `problemas/management/commands/carregar_demo.py`; opcional no Render com `CARREGAR_DEMO=True` | Tarefa da F6; garante regras e auditoria iguais às do uso real |
+| Fluxo sem saltos (Em investigação → Erro conhecido é obrigatório) | Mantida a decisão da F2 de 09/11 | A Figura 1 do planejamento mostra um atalho "correção definitiva imediata"; a diferença fica registrada para a atualização do diagrama na documentação final |

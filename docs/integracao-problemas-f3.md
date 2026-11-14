@@ -10,9 +10,9 @@ A arquitetura continua monolítica: views, formulários e templates Django. Não
 
 ## Ativação das telas
 
-As views e as URLs estão prontas nos apps `problemas`, `acoes` e `kedb`. Os includes em `config/urls.py` aguardam os templates; atualmente seus caminhos retornam 404, sem expor funcionalidades sem telas.
+> **Concluída em 13/11/2026 (Entrega 2).** Os templates abaixo foram criados, os includes estão montados em `config/urls.py` e a navegação por perfil fica na barra lateral de `templates/base.html`. Além do contrato, foram acrescentadas a lista global de Ações Corretivas (`acoes:listar`, protótipo da Figura 6) e a pré-seleção de Incidentes na abertura do Problema (`/problemas/novo/?incidentes=<id>`). O aceite com templates reais está em `problemas/test_telas.py`.
 
-A F3 deve criar:
+A F3 criou:
 
 1. `problemas/templates/problemas/lista.html`, estendendo `base.html`.
 2. `problemas/templates/problemas/detalhe.html`, estendendo `base.html`.
