@@ -126,3 +126,53 @@ class PerfilRequeridoTests(TestCase):
         with self.assertRaises(PermissionDenied):
             view(self._request(self._usuario(Perfil.SUPORTE)))
         self.assertEqual(view(self._request(self._usuario(Perfil.GESTOR_TI))).status_code, 200)
+
+
+class UsuariosRf02Tests(TestCase):
+    """RF02: cadastro e edição de Usuários e atribuição de perfil pelo Gestor de TI."""
+
+    def setUp(self):
+        self.gestor = Usuario.objects.create_user("gestor", password=SENHA, perfil=Perfil.GESTOR_TI)
+        self.suporte = Usuario.objects.create_user("suporte", password=SENHA)
+
+    def test_somente_gestor_acessa(self):
+        self.client.force_login(self.suporte)
+        for nome in ("contas:usuarios", "contas:cadastrar_usuario"):
+            self.assertEqual(self.client.get(reverse(nome)).status_code, 403)
+        self.client.logout()
+        resposta = self.client.get(reverse("contas:usuarios"))
+        self.assertEqual(resposta.status_code, 302)
+        self.client.force_login(self.gestor)
+        self.assertContains(self.client.get(reverse("contas:usuarios")), "Gestor de TI")
+
+    def test_gestor_cadastra_e_edita_perfil(self):
+        self.client.force_login(self.gestor)
+        resposta = self.client.post(
+            reverse("contas:cadastrar_usuario"),
+            {
+                "first_name": "Carla",
+                "last_name": "Mendes",
+                "username": "carla",
+                "email": "carla@exemplo.com",
+                "perfil": Perfil.DESENVOLVEDOR,
+                "password1": SENHA,
+                "password2": SENHA,
+            },
+        )
+        self.assertRedirects(resposta, reverse("contas:usuarios"))
+        carla = Usuario.objects.get(username="carla")
+        self.assertEqual(carla.perfil, Perfil.DESENVOLVEDOR)
+        self.assertTrue(carla.check_password(SENHA))
+        self.client.post(
+            reverse("contas:editar_usuario", args=[carla.pk]),
+            {
+                "first_name": "Carla",
+                "last_name": "Mendes",
+                "username": "carla",
+                "email": "carla@exemplo.com",
+                "perfil": Perfil.GESTOR_TI,
+            },
+        )
+        carla.refresh_from_db()
+        self.assertEqual(carla.perfil, Perfil.GESTOR_TI)
+        self.assertFalse(carla.is_active)  # checkbox desmarcado: usuário inativado

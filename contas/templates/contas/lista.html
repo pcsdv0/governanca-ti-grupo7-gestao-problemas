@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Usuários{% endblock %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div><h1 class="pagina">Usuários</h1><div class="rf">RF02</div></div>
+  <a class="btn btn-destaque" href="{% url 'contas:cadastrar_usuario' %}"><i class="bi bi-plus-lg"></i> Cadastrar Usuário</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead><tr><th scope="col">Nome</th><th scope="col">Login</th><th scope="col">E-mail</th><th scope="col">Perfil</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+  <tbody>
+  {% for usuario in usuarios %}
+    <tr>
+      <td class="fw-semibold">{{ usuario.get_full_name|default:"—" }}</td>
+      <td><code>{{ usuario.username }}</code></td>
+      <td>{{ usuario.email|default:"—" }}</td>
+      <td><span class="badge bg-destaque">{{ usuario.get_perfil_display }}</span></td>
+      <td>{% if usuario.is_active %}Ativo{% else %}<span class="text-body-secondary">Inativo</span>{% endif %}</td>
+      <td><a class="btn btn-sm btn-outline-primary" href="{% url 'contas:editar_usuario' usuario.pk %}" aria-label="Editar {{ usuario.username }}">Editar</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}
