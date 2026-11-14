@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load interface %}
 
 {% block titulo %}Incidentes{% endblock %}
 
 {% block conteudo %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Incidentes</h1>
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div><h1 class="pagina">Incidentes</h1><div class="rf">RF05 · RF06 · RF07 · RF09</div></div>
   {% if pode_cadastrar %}
-  <a class="btn btn-primary" href="{% url 'incidentes:cadastrar' %}">Registrar Incidente</a>
+  <a class="btn btn-destaque" href="{% url 'incidentes:cadastrar' %}"><i class="bi bi-plus-lg"></i> Registrar Incidente</a>
   {% endif %}
 </div>
 <form method="get" class="card card-body mb-3">
@@ -31,26 +32,41 @@
 {% if form.errors %}
 <div class="alert alert-danger" role="alert">Confira os filtros para consultar os incidentes.</div>
 {% elif incidentes %}
-<div class="table-responsive">
-  <table class="table table-striped align-middle">
+{# Seleção de Incidentes sem vínculo para abrir um Problema (RF09), como no protótipo #}
+<form method="get" action="{% url 'problemas:cadastrar' %}" class="card">
+  {% if user|tem_perfil:"SUPORTE" %}
+  <div class="card-header bg-white d-flex flex-wrap gap-2 align-items-center">
+    <span class="small text-body-secondary me-2"><span id="qtd-selecionados">0</span> incidente(s) selecionado(s)</span>
+    <button type="submit" class="btn btn-sm btn-destaque">Abrir Problema com os selecionados</button>
+    <span class="small text-body-secondary">Para vincular a um Problema existente, use “Vincular Incidentes” no detalhe do Problema.</span>
+  </div>
+  {% endif %}
+  <div class="table-responsive">
+  <table class="table table-hover align-middle mb-0">
     <thead>
       <tr>
+        <th scope="col" style="width: 32px"><span class="visually-hidden">Selecionar</span></th>
+        <th scope="col">Código</th>
         <th scope="col">Incidente</th>
         <th scope="col">Ocorrência</th>
         <th scope="col">Impacto</th>
         <th scope="col">Sistema afetado</th>
         <th scope="col">Registrado por</th>
+        <th scope="col">Problema</th>
         <th scope="col">Ações</th>
       </tr>
     </thead>
     <tbody>
       {% for incidente in incidentes %}
       <tr>
+        <td>{% if not incidente.problema_id and user|tem_perfil:"SUPORTE" %}<input class="form-check-input selecao" type="checkbox" name="incidentes" value="{{ incidente.pk }}" aria-label="Selecionar {{ incidente.titulo }}">{% endif %}</td>
+        <td class="codigo">{{ incidente|codigo }}</td>
         <td><strong>{{ incidente.titulo }}</strong><br>{{ incidente.descricao|linebreaksbr }}</td>
         <td>{{ incidente.data_ocorrencia|date:"d/m/Y H:i:s" }}</td>
-        <td>{{ incidente.get_impacto_display }}</td>
+        <td><span class="badge text-bg-{{ incidente.impacto|cor }}">{{ incidente.get_impacto_display }}</span></td>
         <td>{{ incidente.sistema }}</td>
         <td>{{ incidente.registrado_por }}</td>
+        <td>{% if incidente.problema_id %}<a class="badge text-bg-warning text-decoration-none codigo" href="{% url 'problemas:detalhe' incidente.problema_id %}">{{ incidente.problema|codigo }}</a>{% else %}<span class="text-body-secondary small">Sem Problema</span>{% endif %}</td>
         <td>
           {% if incidente.pode_editar %}
           <a class="btn btn-sm btn-outline-primary" href="{% url 'incidentes:editar' incidente.pk %}"
@@ -63,8 +79,17 @@
       {% endfor %}
     </tbody>
   </table>
-</div>
+  </div>
+</form>
 {% else %}
 <p class="text-body-secondary">Nenhum incidente encontrado.</p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll(".selecao").forEach((caixa) => caixa.addEventListener("change", () => {
+    document.getElementById("qtd-selecionados").textContent = document.querySelectorAll(".selecao:checked").length;
+  }));
+</script>
 {% endblock %}

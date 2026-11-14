@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load interface %}
+{% block titulo %}{{ problema|codigo }}{% endblock %}
+{% block conteudo %}
+{% with proximo=problema|proximo_status %}
+<nav class="small mb-1" aria-label="Navegação"><a href="{% url 'problemas:listar' %}">Problemas</a> / {{ problema|codigo }}</nav>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="pagina"><span class="codigo">{{ problema|codigo }}</span> · {{ problema.titulo }}</h1>
+    <div class="text-body-secondary small">
+      {{ problema.sistema }} · Prioridade <strong>{{ problema.get_prioridade_display|default:"não atribuída" }}</strong>
+      · Responsável: <strong>{{ problema.responsavel|default:"não atribuído" }}</strong>{% if problema.responsavel %} (Desenvolvedor){% endif %}
+    </div>
+  </div>
+  {# RF10: avanço para o próximo status, sem saltos; o encerramento é exclusivo do Gestor de TI #}
+  {% if proximo %}
+    {% if proximo.valor == "ENCERRADO" and user|tem_perfil:"GESTOR_TI" or proximo.valor != "ENCERRADO" and user|tem_perfil:"DESENVOLVEDOR,GESTOR_TI" %}
+    <form method="post" action="{% url 'problemas:alterar_status' problema.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="{{ proximo.valor }}">
+      <button type="submit" class="btn btn-destaque"><i class="bi bi-arrow-right-circle"></i> Avançar para “{{ proximo.rotulo }}”</button>
+    </form>
+    {% endif %}
+  {% endif %}
+</div>
+
+<div class="etapas mb-3" aria-label="Ciclo de status do Problema">
+  {% for etapa in problema|etapas %}
+  <div class="etapa {% if etapa.atual %}atual{% elif etapa.feito %}feito{% endif %}">{% if etapa.feito %}<i class="bi bi-check2"></i> {% endif %}{{ etapa.rotulo }}</div>
+  {% endfor %}
+</div>
+
+<div class="row g-3">
+<div class="col-xl-9">
+<div class="card">
+  <div class="card-header bg-white">
+    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+      <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#aba-incidentes" type="button" role="tab">Incidentes vinculados <span class="badge text-bg-dark">{{ problema.quantidade_incidentes }}</span></button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#aba-causa" type="button" role="tab">Causa raiz {% if causa_raiz %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#aba-erro" type="button" role="tab">Erro conhecido {% if erro_conhecido %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#aba-acoes" type="button" role="tab">Ações corretivas <span class="badge text-bg-dark">{{ acoes|length }}</span></button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#aba-historico" type="button" role="tab">Histórico</button></li>
+    </ul>
+  </div>
+  <div class="card-body tab-content">
+
+    {# RF12: Incidentes vinculados e contagem de ocorrências #}
+    <div class="tab-pane fade show active" id="aba-incidentes" role="tabpanel">
+      {% with primeira=incidentes|dictsort:"data_ocorrencia"|first ultima=incidentes|dictsortreversed:"data_ocorrencia"|first %}
+      <p class="mb-2"><strong>{{ problema.quantidade_incidentes }} ocorrência(s)</strong>{% if primeira %}. Primeira: {{ primeira.data_ocorrencia|date:"d/m/Y" }} · Última: {{ ultima.data_ocorrencia|date:"d/m/Y" }}{% endif %}</p>
+      {% endwith %}
+      <table class="table table-sm align-middle">
+        <thead><tr><th scope="col">Código</th><th scope="col">Título</th><th scope="col">Data</th><th scope="col">Impacto</th><th scope="col">Registrado por</th></tr></thead>
+        <tbody>
+        {% for incidente in incidentes %}
+          <tr><td class="codigo">{{ incidente|codigo }}</td><td>{{ incidente.titulo }}</td>
+            <td>{{ incidente.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+            <td><span class="badge text-bg-{{ incidente.impacto|cor }}">{{ incidente.get_impacto_display }}</span></td>
+            <td>{{ incidente.registrado_por }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if user|tem_perfil:"SUPORTE" and problema.status != "ENCERRADO" %}
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'problemas:vincular' problema.pk %}"><i class="bi bi-link-45deg"></i> Vincular Incidentes</a>
+      {% endif %}
+    </div>
+
+    {# RF15: CausaRaiz pelo método dos 5 Porquês #}
+    <div class="tab-pane fade" id="aba-causa" role="tabpanel">
+      {% if causa_raiz %}
+        <h2 class="h6 fw-bold">Análise dos 5 Porquês</h2>
+        <div class="border-start border-3 ps-3 mb-3" style="white-space: pre-line">{{ causa_raiz.analise_5_porques }}</div>
+        <div class="alert alert-success"><strong>Causa raiz identificada:</strong> {{ causa_raiz.descricao|linebreaksbr }}</div>
+      {% else %}
+        <p class="text-body-secondary">Nenhuma CausaRaiz registrada.</p>
+      {% endif %}
+      {% if user|tem_perfil:"DESENVOLVEDOR" and problema.status != "ENCERRADO" %}
+      <a class="btn btn-sm btn-destaque" href="{% url 'problemas:registrar_causa_raiz' problema.pk %}">{% if causa_raiz %}Atualizar{% else %}Registrar{% endif %} CausaRaiz</a>
+      {% endif %}
+    </div>
+
+    {# RF17: ErroConhecido com sintoma, causa e solução de contorno #}
+    <div class="tab-pane fade" id="aba-erro" role="tabpanel">
+      {% if erro_conhecido %}
+        <dl class="row mb-3">
+          <dt class="col-sm-3">Sintoma</dt><dd class="col-sm-9">{{ erro_conhecido.sintoma|linebreaksbr }}</dd>
+          <dt class="col-sm-3">Causa</dt><dd class="col-sm-9">{{ erro_conhecido.causa|linebreaksbr }}</dd>
+          <dt class="col-sm-3">Solução de contorno</dt><dd class="col-sm-9 fw-semibold">{{ erro_conhecido.solucao_contorno|linebreaksbr }}</dd>
+        </dl>
+      {% else %}
+        <p class="text-body-secondary">Nenhum ErroConhecido registrado.</p>
+      {% endif %}
+      {% if user|tem_perfil:"DESENVOLVEDOR" and problema.status != "ENCERRADO" %}
+      <a class="btn btn-sm btn-destaque" href="{% url 'kedb:registrar' problema.pk %}">{% if erro_conhecido %}Atualizar{% else %}Registrar{% endif %} ErroConhecido</a>
+      {% endif %}
+    </div>
+
+    {# RF20 e RF21: Ações Corretivas #}
+    <div class="tab-pane fade" id="aba-acoes" role="tabpanel">
+      <table class="table table-sm align-middle">
+        <thead><tr><th scope="col">Ação</th><th scope="col">Responsável</th><th scope="col">Prazo</th><th scope="col">Status</th><th scope="col"></th></tr></thead>
+        <tbody>
+        {% for acao in acoes %}
+          {% with prox_acao=acao|proximo_status %}
+          <tr><td>{{ acao.descricao }}</td><td>{{ acao.responsavel }}</td><td>{{ acao.prazo|date:"d/m/Y" }}</td>
+            <td><span class="badge text-bg-{{ acao.status|cor }}">{{ acao.get_status_display }}</span></td>
+            <td class="text-end">
+              {% if prox_acao and user|tem_perfil:"DESENVOLVEDOR" and problema.status != "ENCERRADO" %}
+              <form method="post" action="{% url 'acoes:alterar_status' acao.pk %}">
+                {% csrf_token %}<input type="hidden" name="status" value="{{ prox_acao.valor }}">
+                <button type="submit" class="btn btn-sm btn-outline-primary">Marcar como {{ prox_acao.rotulo }}</button>
+              </form>
+              {% endif %}
+            </td></tr>
+          {% endwith %}
+        {% empty %}
+          <tr><td colspan="5" class="text-body-secondary">Nenhuma AçãoCorretiva registrada.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if user|tem_perfil:"DESENVOLVEDOR,GESTOR_TI" and problema.status != "ENCERRADO" %}
+      <a class="btn btn-sm btn-destaque" href="{% url 'acoes:cadastrar' problema.pk %}"><i class="bi bi-plus-lg"></i> Criar AçãoCorretiva</a>
+      {% endif %}
+    </div>
+
+    {# RF23 e RF24: histórico de status e linha do tempo de auditoria #}
+    <div class="tab-pane fade" id="aba-historico" role="tabpanel">
+      <h2 class="h6 fw-bold">Histórico de status</h2>
+      <ul class="linha-tempo mb-4">
+        {% for evento in historico_status %}
+        <li class="status"><div class="fw-semibold">{{ evento.get_status_anterior_display|default:"—" }} → {{ evento.get_status_novo_display }}</div>
+          <div class="text-body-secondary small">{{ evento.data_alteracao|date:"d/m/Y H:i" }} · {{ evento.usuario|default:"sistema" }}</div></li>
+        {% endfor %}
+      </ul>
+      <h2 class="h6 fw-bold">Linha do tempo de alterações</h2>
+      <ul class="linha-tempo mb-0">
+        {% for evento in linha_do_tempo reversed %}
+        <li><div class="fw-semibold">{{ evento.entidade }} {% if evento.registro.history_type == "+" %}criado(a){% else %}alterado(a){% endif %}
+          {% if evento.entidade == "Problema" %}{% with anterior=evento.registro.prev_record %}{% if anterior and anterior.status == evento.registro.status %}· responsável {{ evento.registro.responsavel|default:"não atribuído" }} · prioridade {{ evento.registro.get_prioridade_display|default:"não atribuída" }}{% else %}· status {{ evento.registro.get_status_display }}{% endif %}{% endwith %}{% elif evento.entidade == "AçãoCorretiva" %}· “{{ evento.registro.descricao|truncatechars:50 }}” · {{ evento.registro.get_status_display }}{% endif %}</div>
+          <div class="text-body-secondary small">{{ evento.data|date:"d/m/Y H:i" }} · {{ evento.usuario|default:"sistema" }}{% if evento.usuario %} ({{ evento.usuario.get_perfil_display }}){% endif %}</div></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="col-xl-3">
+  <div class="card card-body mb-3 small">
+    <h2 class="h6 fw-bold">Dados do Problema</h2>
+    <dl class="mb-0">
+      <dt>Status</dt><dd><span class="badge text-bg-{{ problema.status|cor }}">{{ problema.get_status_display }}</span></dd>
+      <dt>Responsável pelo sistema</dt><dd>{{ problema.sistema.responsavel }}</dd>
+      <dt>Descrição</dt><dd>{{ problema.descricao|linebreaksbr }}</dd>
+    </dl>
+  </div>
+  {% if user|tem_perfil:"GESTOR_TI" and problema.status != "ENCERRADO" %}
+  <a class="btn btn-outline-primary w-100 mb-3" href="{% url 'problemas:atribuir' problema.pk %}"><i class="bi bi-person-check"></i> Atribuir responsável e prioridade</a>
+  {% endif %}
+  {% if proximo.valor == "ENCERRADO" %}
+  <div class="alert alert-info small">O encerramento exige ao menos uma AçãoCorretiva e todas Concluídas. Somente o Gestor de TI encerra.</div>
+  {% endif %}
+</div>
+</div>
+{% endwith %}
+{% endblock %}

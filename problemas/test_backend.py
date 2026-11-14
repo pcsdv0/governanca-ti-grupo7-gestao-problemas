@@ -543,10 +543,10 @@ class ProblemaBackendTests(TestCase):
         self.assertFalse(resposta.context["incidentes"].exists())
 
     @override_settings(ROOT_URLCONF="config.urls")
-    def test_rotas_sem_templates_ainda_nao_expostas(self):
+    def test_rotas_publicadas_com_as_telas_da_f3(self):
         self.client.force_login(self.admin)
-        self.assertEqual(self.client.get("/problemas/").status_code, 404)
-        self.assertEqual(self.client.get("/problemas/novo/").status_code, 404)
+        self.assertEqual(self.client.get("/problemas/").status_code, 200)
+        self.assertEqual(self.client.get("/problemas/novo/").status_code, 200)
 
     def test_abertura_revalida_toda_selecao_se_outro_usuario_vincular_antes(self):
         self.client.force_login(self.suporte)

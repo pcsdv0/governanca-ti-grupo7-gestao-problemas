@@ -13,3 +13,9 @@ python manage.py migrate --no-input
 if [ -n "$DJANGO_SUPERUSER_USERNAME" ]; then
   python manage.py createsuperuser --no-input || echo "Administrador já existe."
 fi
+
+# Dados de demonstração (opcional): defina CARREGAR_DEMO=True no painel do Render.
+# O comando não faz nada se já houver Incidentes, então pode rodar a cada deploy.
+if [ "$CARREGAR_DEMO" = "True" ]; then
+  python manage.py carregar_demo
+fi

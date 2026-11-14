@@ -1,4 +1,4 @@
-"""Rotas do RF17, aguardando as telas da F3 em config.urls."""
+"""Rotas do RF17 (registro de ErroConhecido)."""
 
 from django.urls import path
 

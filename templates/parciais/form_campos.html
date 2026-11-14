@@ -1,0 +1,15 @@
+{% load interface %}
+{% if form.errors %}<div class="alert alert-danger" role="alert">Não foi possível salvar. Confira os campos abaixo.</div>{% endif %}
+{% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+{% for field in form %}
+<div class="mb-3">
+  {% if field.field.widget.input_type == "checkbox" and not field.field.widget.allow_multiple_selected %}
+    <div class="form-check">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+  {% else %}
+    <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+    {{ field|campo }}
+  {% endif %}
+  {% if field.help_text %}<div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>{% endif %}
+  {% if field.errors %}<div class="text-danger small" id="{{ field.auto_id }}_error">{{ field.errors|join:" " }}</div>{% endif %}
+</div>
+{% endfor %}

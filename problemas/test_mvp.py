@@ -664,11 +664,11 @@ class BackendMvpTests(TestCase):
         self.assertEqual(len(detalhe.context["linha_do_tempo"]), 12)
 
     @override_settings(ROOT_URLCONF="config.urls")
-    def test_rotas_novas_aguardam_telas_da_f3(self):
+    def test_rotas_novas_publicadas_com_as_telas_da_f3(self):
         self.client.force_login(self.admin)
         for url in (
             f"/problemas/{self.problema.pk}/causa-raiz/",
             f"/acoes/problema/{self.problema.pk}/nova/",
             f"/kedb/problema/{self.problema.pk}/registrar/",
         ):
-            self.assertEqual(self.client.get(url).status_code, 404)
+            self.assertEqual(self.client.get(url).status_code, 200)

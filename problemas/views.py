@@ -82,7 +82,12 @@ def detalhe(request, pk):
 @perfil_requerido(Perfil.SUPORTE)
 @require_http_methods(["GET", "POST"])
 def cadastrar(request):
-    form = AbrirProblemaForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST":
+        form = AbrirProblemaForm(request.POST)
+    else:
+        # A lista de Incidentes envia os selecionados por GET (?incidentes=1&incidentes=2).
+        selecionados = [pk for pk in request.GET.getlist("incidentes") if pk.isdigit()]
+        form = AbrirProblemaForm(initial={"incidentes": selecionados} if selecionados else None)
     if request.method == "POST" and form.is_valid():
         try:
             problema = services.abrir_problema(
