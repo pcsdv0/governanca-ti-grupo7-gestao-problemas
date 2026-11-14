@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load interface %}
+{% block titulo %}Ações corretivas{% endblock %}
+{% block conteudo %}
+<div class="mb-3"><h1 class="pagina">Ações corretivas</h1><div class="rf">RF20 · RF21</div></div>
+<form method="get" class="card card-body mb-3">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-3"><label class="form-label" for="f-status">Status</label>
+      <select id="f-status" name="status" class="form-select"><option value="">Todos</option>
+        {% for valor, rotulo in status_choices %}<option value="{{ valor }}" {% if filtro.status == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+      </select></div>
+    <div class="col-md-3"><label class="form-label" for="f-resp">Responsável</label>
+      <select id="f-resp" name="responsavel" class="form-select"><option value="">Todos</option>
+        {% for r in responsaveis %}<option value="{{ r.pk }}" {% if filtro.responsavel == r.pk|stringformat:"s" %}selected{% endif %}>{{ r }}</option>{% endfor %}
+      </select></div>
+    <div class="col-md-auto"><button type="submit" class="btn btn-primary">Filtrar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'acoes:listar' %}">Limpar</a></div>
+  </div>
+</form>
+{% if acoes %}
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead><tr><th scope="col">Ação</th><th scope="col">Problema</th><th scope="col">Responsável</th><th scope="col">Prazo</th><th scope="col">Status</th><th scope="col">Atualizar status</th></tr></thead>
+  <tbody>
+  {% for acao in acoes %}
+    {% with prox=acao|proximo_status %}
+    <tr>
+      <td>{{ acao.descricao }}</td>
+      <td><a class="codigo" href="{% url 'problemas:detalhe' acao.problema_id %}">{{ acao.problema|codigo }}</a></td>
+      <td>{{ acao.responsavel }}</td>
+      <td>{{ acao.prazo|date:"d/m/Y" }}</td>
+      <td><span class="badge text-bg-{{ acao.status|cor }}">{{ acao.get_status_display }}</span></td>
+      <td>
+        {% if prox and user|tem_perfil:"DESENVOLVEDOR" and acao.problema.status != "ENCERRADO" %}
+        <form method="post" action="{% url 'acoes:alterar_status' acao.pk %}">
+          {% csrf_token %}<input type="hidden" name="status" value="{{ prox.valor }}">
+          <button type="submit" class="btn btn-sm btn-outline-primary">Marcar como {{ prox.rotulo }}</button>
+        </form>
+        {% else %}<span class="text-body-secondary small">—</span>{% endif %}
+      </td>
+    </tr>
+    {% endwith %}
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% else %}
+<p class="text-body-secondary">Nenhuma AçãoCorretiva encontrada.</p>
+{% endif %}
+{% endblock %}

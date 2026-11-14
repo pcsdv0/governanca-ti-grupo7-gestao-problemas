@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load interface %}
+{% block titulo %}Problemas{% endblock %}
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div><h1 class="pagina">Problemas</h1><div class="rf">RF09 · RF10 · RF11 · RF12</div></div>
+  {% if user|tem_perfil:"SUPORTE" %}
+  <a class="btn btn-destaque" href="{% url 'problemas:cadastrar' %}"><i class="bi bi-plus-lg"></i> Registrar Problema</a>
+  {% endif %}
+</div>
+{% if problemas %}
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead><tr>
+    <th scope="col">Código</th><th scope="col">Título</th><th scope="col">Sistema afetado</th>
+    <th scope="col">Prioridade</th><th scope="col">Responsável</th>
+    <th scope="col" class="text-center">Incidentes</th><th scope="col">Status</th>
+  </tr></thead>
+  <tbody>
+  {% for problema in problemas %}
+    <tr>
+      <td><a class="codigo" href="{% url 'problemas:detalhe' problema.pk %}">{{ problema|codigo }}</a></td>
+      <td>{{ problema.titulo }}</td>
+      <td>{{ problema.sistema }}</td>
+      <td>{% if problema.prioridade %}<span class="badge text-bg-{{ problema.prioridade|cor }}">{{ problema.get_prioridade_display }}</span>{% else %}<span class="text-body-secondary">Não atribuída</span>{% endif %}</td>
+      <td>{{ problema.responsavel|default:"Não atribuído" }}</td>
+      <td class="text-center fw-semibold">{{ problema.quantidade_incidentes }}</td>
+      <td><span class="badge text-bg-{{ problema.status|cor }}">{{ problema.get_status_display }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% else %}
+<p class="text-body-secondary">Nenhum Problema registrado.</p>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Rotas para a integração com os templates da F3; ainda não montadas em config.urls."""
+"""Rotas de Problemas (RF07, RF09 a RF12, RF15)."""
 
 from django.urls import path
 
