@@ -47,8 +47,29 @@
       {% for incidente in incidentes %}
       <tr>
         <td><strong>{{ incidente.titulo }}</strong><br>{{ incidente.descricao|linebreaksbr }}</td>
+
         <td>{{ incidente.data_ocorrencia|date:"d/m/Y H:i:s" }}</td>
-        <td>{{ incidente.get_impacto_display }}</td>
+        <td>
+          {% if incidente.impacto == "ALTO" %}
+            <span class="badge bg-danger">
+              {{ incidente.get_impacto_display }}
+            </span>
+          {% elif incidente.impacto == "MEDIO" %}
+            <span class="badge bg-warning text-dark">
+              {{ incidente.get_impacto_display }}
+            </span>
+          {% elif incidente.impacto == "BAIXO" %}
+            <span class="badge bg-success">
+              {{ incidente.get_impacto_display }}
+            </span>
+          {% else %}
+            <span class="badge bg-secondary">
+              {{ incidente.get_impacto_display }}
+            </span>
+          {% endif %}
+        </td>
+
+
         <td>{{ incidente.sistema }}</td>
         <td>{{ incidente.registrado_por }}</td>
         <td>

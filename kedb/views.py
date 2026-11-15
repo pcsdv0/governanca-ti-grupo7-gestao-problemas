@@ -44,7 +44,7 @@ def registrar(request, problema_pk):
         except ValidationError as exc:
             adicionar_erros(form, exc)
         else:
-            messages.success(request, "ErroConhecido salvo com sucesso.")
+            messages.success(request, "Erro Conhecido salvo com sucesso.")
             return redirect("problemas:detalhe", pk=problema.pk)
     return render(
         request,
@@ -53,6 +53,6 @@ def registrar(request, problema_pk):
             "form": form,
             "problema": problema,
             "erro_conhecido": erro,
-            "titulo": "Registrar ErroConhecido",
+            "titulo": "Registrar Erro Conhecido",
         },
     )

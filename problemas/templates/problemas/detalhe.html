@@ -1,0 +1,487 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Detalhes do Problema{% endblock %}
+
+{% block conteudo %}
+
+<!-- Cabeçalho -->
+<div class="mb-4">
+  <a href="{% url 'problemas:listar' %}" class="text-decoration-none">
+    <i class="bi bi-arrow-left"></i> Voltar para Problemas
+  </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+  <div>
+    <h1 class="h3 fw-bold mb-2">{{ problema.titulo }}</h1>
+    <p class="text-body-secondary mb-0">
+      Problema #{{ problema.pk }}
+    </p>
+  </div>
+
+<!-- Status do problema com cores -->
+{% if problema.status == "REGISTRADO" %}
+  <span class="badge bg-secondary fs-6">
+    {{ problema.get_status_display }}
+  </span>
+
+{% elif problema.status == "EM_INVESTIGACAO" %}
+  <span class="badge bg-primary fs-6">
+    {{ problema.get_status_display }}
+  </span>
+
+{% elif problema.status == "ERRO_CONHECIDO" %}
+  <span class="badge fs-6" style="background-color: #6f42c1;">
+    {{ problema.get_status_display }}
+  </span>
+
+{% elif problema.status == "EM_CORRECAO" %}
+  <span class="badge fs-6" style="background-color: #fd7e14; color: #212529;">
+    {{ problema.get_status_display }}
+  </span>
+
+{% elif problema.status == "RESOLVIDO" %}
+  <span class="badge bg-success fs-6">
+    {{ problema.get_status_display }}
+  </span>
+
+{% else %}
+  <span class="badge bg-secondary fs-6">
+    {{ problema.get_status_display }}
+  </span>
+{% endif %}
+
+</div>
+
+<!-- Ações de gerenciamento do problema -->
+<div class="d-flex justify-content-end flex-wrap gap-2 mb-3">
+
+  {% if user.perfil == "GESTOR_TI" %}
+    <a href="{% url 'problemas:atribuir' problema.pk %}"
+       class="btn btn-outline-primary">
+      <i class="bi bi-person-gear"></i>
+      Atribuir responsável e prioridade
+    </a>
+  {% endif %}
+{% if user.perfil == "DESENVOLVEDOR" and problema.status != "RESOLVIDO" and problema.status != "ENCERRADO" or user.perfil == "GESTOR_TI" and problema.status != "ENCERRADO" %}
+      <a href="{% url 'problemas:alterar_status' problema.pk %}"
+         class="btn btn-primary">
+        <i class="bi bi-arrow-repeat"></i>
+        Alterar status
+      </a>
+    {% endif %}
+  {% endif %}
+
+</div>
+
+<!-- Informações gerais -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold">
+    Informações do problema
+  </div>
+
+  <div class="card-body">
+    <p><strong>Descrição:</strong> {{ problema.descricao }}</p>
+
+    <div class="row">
+      <div class="col-md-4 mb-2">
+        <strong>Sistema:</strong><br>
+        {{ problema.sistema }}
+      </div>
+
+      <div class="col-md-4 mb-2">
+        <strong>Prioridade:</strong><br>
+        {{ problema.get_prioridade_display|default:"Não definida" }}
+      </div>
+
+      <div class="col-md-4 mb-2">
+        <strong>Responsável:</strong><br>
+        {{ problema.responsavel|default:"Não atribuído" }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Abas -->
+<ul class="nav nav-tabs mb-3" id="abasProblema" role="tablist">
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#incidentes"
+            type="button"
+            role="tab">
+      Incidentes vinculados
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#causa"
+            type="button"
+            role="tab">
+      Causa raiz
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#kedb"
+            type="button"
+            role="tab">
+      Erro conhecido
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#acoes"
+            type="button"
+            role="tab">
+      Ações corretivas
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#historico"
+            type="button"
+            role="tab">
+      Histórico
+    </button>
+  </li>
+
+</ul>
+
+<div class="tab-content">
+
+  <!-- ABA 1: INCIDENTES -->
+  <div class="tab-pane fade show active" id="incidentes" role="tabpanel">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+  <h2 class="h5 mb-0">Incidentes vinculados</h2>
+  {% if user.perfil == "SUPORTE" %}
+    <a href="{% url 'problemas:vincular' problema.pk %}"
+       class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i>
+      Vincular Incidentes
+    </a>
+  {% endif %}
+
+</div>
+
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Incidente</th>
+                <th>Data</th>
+                <th>Impacto</th>
+                <th>Registrado por</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for incidente in incidentes %}
+              <tr>
+                <td>
+                  <strong>{{ incidente.titulo }}</strong>
+                  <div class="small text-body-secondary">
+                    {{ incidente.descricao|truncatechars:80 }}
+                  </div>
+                </td>
+
+                <td>
+                  {{ incidente.data_ocorrencia|date:"d/m/Y H:i" }}
+                </td>
+
+                <td>
+                  {% if incidente.get_impacto_display == "Alto" %}
+                    <span class="badge bg-danger">Alto</span>
+                  {% elif incidente.get_impacto_display == "Médio" %}
+                    <span class="badge bg-warning text-dark">Médio</span>
+                  {% elif incidente.get_impacto_display == "Baixo" %}
+                    <span class="badge bg-success">Baixo</span>
+                  {% else %}
+                    <span class="badge bg-secondary">
+                      {{ incidente.get_impacto_display }}
+                    </span>
+                  {% endif %}
+                </td>
+
+                <td>{{ incidente.registrado_por }}</td>
+              </tr>
+
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-body-secondary py-4">
+                  Nenhum incidente vinculado.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 2: CAUSA RAIZ -->
+  <div class="tab-pane fade" id="causa" role="tabpanel">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+  <h2 class="h5 mb-0">Análise de causa raiz</h2>
+  {% if user.perfil == "DESENVOLVEDOR" %}
+    <a href="{% url 'problemas:registrar_causa_raiz' problema.pk %}"  class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i>
+      {% if causa_raiz %}
+        Atualizar Causa Raiz
+      {% else %}
+        Registrar Causa Raiz
+      {% endif %}
+    </a>
+  {% endif %}
+
+</div>
+
+
+        {% if causa_raiz %}
+          <h3 class="h6 fw-semibold">Descrição</h3>
+          <p>{{ causa_raiz.descricao|linebreaksbr }}</p>
+
+          <hr>
+
+          <h3 class="h6 fw-semibold">Análise dos 5 Porquês</h3>
+          <p>{{ causa_raiz.analise_5_porques|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-body-secondary mb-0">
+            Nenhuma causa raiz registrada.
+          </p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 3: ERRO CONHECIDO -->
+  <div class="tab-pane fade" id="kedb" role="tabpanel">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+
+          <h2 class="h5 mb-0">Base de erros conhecidos (KEDB)</h2>
+
+          {% if user.perfil == "DESENVOLVEDOR" %}
+            <a href="{% url 'kedb:registrar' problema.pk %}"
+               class="btn btn-primary">
+              <i class="bi bi-plus-circle"></i>
+
+              {% if erro_conhecido %}
+                Atualizar Erro Conhecido
+              {% else %}
+                Registrar Erro Conhecido
+              {% endif %}
+            </a>
+          {% endif %}
+
+        </div>
+
+        {% if erro_conhecido %}
+          <h3 class="h6 fw-semibold">Sintoma</h3>
+          <p>{{ erro_conhecido.sintoma|linebreaksbr }}</p>
+
+          <hr>
+
+          <h3 class="h6 fw-semibold">Causa</h3>
+          <p>{{ erro_conhecido.causa|linebreaksbr }}</p>
+
+          <hr>
+
+          <h3 class="h6 fw-semibold">Solução de contorno</h3>
+          <p>{{ erro_conhecido.solucao_contorno|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-body-secondary mb-0">
+            Nenhum erro conhecido registrado.
+          </p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 4: AÇÕES CORRETIVAS -->
+  <div class="tab-pane fade" id="acoes" role="tabpanel">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+
+          <h2 class="h5 mb-0">Ações corretivas</h2>
+
+          {% if user.perfil == "DESENVOLVEDOR" or user.perfil == "GESTOR_TI" %}
+            <a href="{% url 'acoes:cadastrar' problema.pk %}"
+               class="btn btn-primary">
+              <i class="bi bi-plus-circle"></i>
+              Nova Ação Corretiva
+            </a>
+          {% endif %}
+
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+
+            <thead class="table-light">
+              <tr>
+                <th>Descrição</th>
+                <th>Responsável</th>
+                <th>Prazo</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for acao in acoes %}
+              <tr>
+
+                <td>{{ acao.descricao|truncatechars:100 }}</td>
+
+                <td>{{ acao.responsavel }}</td>
+
+                <td>{{ acao.prazo|date:"d/m/Y" }}</td>
+
+                <td>
+                  {% if acao.get_status_display == "Concluída" %}
+                    <span class="badge bg-success">
+                      Concluída
+                    </span>
+                  {% elif acao.get_status_display == "Em andamento" %}
+                    <span class="badge bg-warning text-dark">
+                      Em andamento
+                    </span>
+                  {% elif acao.get_status_display == "Aberta" %}
+                    <span class="badge bg-secondary">
+                      Aberta
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary">
+                      {{ acao.get_status_display }}
+                    </span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if user.perfil == "DESENVOLVEDOR" %}
+                    <a href="{% url 'acoes:alterar_status' acao.pk %}"
+                       class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-pencil-square"></i>
+                      Alterar status
+                    </a>
+                  {% else %}
+                    <span class="text-body-secondary">—</span>
+                  {% endif %}
+                </td>
+
+              </tr>
+
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-body-secondary py-4">
+                  Nenhuma ação corretiva registrada.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ABA 5: HISTÓRICO -->
+  <div class="tab-pane fade" id="historico" role="tabpanel">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <h2 class="h5 mb-3">Histórico de alterações</h2>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Data</th>
+                <th>Entidade</th>
+                <th>Usuário</th>
+                <th>Operação</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for evento in linha_do_tempo %}
+              <tr>
+                <td>{{ evento.data|date:"d/m/Y H:i" }}</td>
+
+                <td>
+                  {% if evento.entidade == "AçãoCorretiva" %}
+                    Ação corretiva
+                  {% elif evento.entidade == "CausaRaiz" %}
+                    Causa raiz
+                  {% elif evento.entidade == "ErroConhecido" %}
+                    Erro conhecido
+                  {% else %}
+                    {{ evento.entidade }}
+                  {% endif %}
+                </td>
+
+                <td>{{ evento.usuario|default:"Sistema" }}</td>
+
+                <td>
+                  {% if evento.registro.history_type == "+" %}
+                    Criação
+                  {% elif evento.registro.history_type == "~" %}
+                    Alteração
+                  {% elif evento.registro.history_type == "-" %}
+                    Exclusão
+                  {% else %}
+                    Registro
+                  {% endif %}
+                </td>
+              </tr>
+
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-body-secondary py-4">
+                  Nenhuma alteração registrada.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -200,7 +200,7 @@ def registrar_causa_raiz(request, pk):
         except ValidationError as exc:
             adicionar_erros(form, exc)
         else:
-            messages.success(request, "CausaRaiz salva com sucesso.")
+            messages.success(request, "Causa Raiz salva com sucesso.")
             return redirect("problemas:detalhe", pk=problema.pk)
     return render(
         request,
@@ -209,6 +209,6 @@ def registrar_causa_raiz(request, pk):
             "form": form,
             "problema": problema,
             "causa_raiz": causa,
-            "titulo": "Registrar CausaRaiz",
+            "titulo": "Registrar Causa Raiz",
         },
     )

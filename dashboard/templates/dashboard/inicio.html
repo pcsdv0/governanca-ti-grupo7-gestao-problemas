@@ -1,0 +1,314 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Dashboard de Indicadores{% endblock %}
+
+{% block conteudo %}
+
+<div class="mb-4">
+  <h1 class="h3 fw-bold">Dashboard de Indicadores</h1>
+  <p class="text-body-secondary">
+    Visão geral dos incidentes, problemas e ações corretivas.
+  </p>
+</div>
+
+<!-- Indicadores numéricos -->
+<div class="row g-3 mb-4">
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-body-secondary mb-2">
+          <i class="bi bi-exclamation-triangle"></i>
+          Incidentes
+        </p>
+        <h2 class="display-6 fw-bold mb-0">
+          {{ total_incidentes }}
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-body-secondary mb-2">
+          <i class="bi bi-tools"></i>
+          Problemas
+        </p>
+        <h2 class="display-6 fw-bold mb-0">
+          {{ total_problemas }}
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-body-secondary mb-2">
+          <i class="bi bi-check-circle"></i>
+          Ações corretivas
+        </p>
+        <h2 class="display-6 fw-bold mb-0">
+          {{ total_acoes }}
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <p class="text-body-secondary mb-2">
+          <i class="bi bi-journal-text"></i>
+          Erros conhecidos
+        </p>
+        <h2 class="display-6 fw-bold mb-0">
+          {{ total_erros_conhecidos }}
+        </h2>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4">
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-4">Incidentes por impacto</h2>
+        <div style="position: relative; height: 300px;">
+          <canvas id="graficoImpacto"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 class="h5 mb-4">Problemas por status</h2>
+        <div style="position: relative; height: 300px;">
+          <canvas id="graficoProblemas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 mb-4">
+          Ações corretivas por status
+        </h2>
+        <div style="position: relative; height: 300px;">
+          <canvas id="graficoAcoes"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Dados recebidos do Django -->
+{{ incidentes_por_impacto|json_script:"dados-impacto" }}
+{{ problemas_por_status|json_script:"dados-problemas" }}
+{{ acoes_por_status|json_script:"dados-acoes" }}
+
+<!-- Biblioteca Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const dadosImpacto = JSON.parse(
+    document.getElementById("dados-impacto").textContent
+  );
+
+  const dadosProblemas = JSON.parse(
+    document.getElementById("dados-problemas").textContent
+  );
+
+  const dadosAcoes = JSON.parse(
+    document.getElementById("dados-acoes").textContent
+  );
+
+  const rotulosImpacto = {
+    BAIXO: "Baixo",
+    MEDIO: "Médio",
+    ALTO: "Alto"
+  };
+
+  const rotulosProblema = {
+    REGISTRADO: "Registrado",
+    EM_INVESTIGACAO: "Em investigação",
+    ERRO_CONHECIDO: "Erro conhecido",
+    EM_CORRECAO: "Em correção",
+    RESOLVIDO: "Resolvido",
+    ENCERRADO: "Encerrado"
+  };
+
+  const rotulosAcao = {
+    ABERTA: "Aberta",
+    EM_ANDAMENTO: "Em andamento",
+    CONCLUIDA: "Concluída"
+  };
+
+  // Gráfico 1: Incidentes por impacto
+  new Chart(
+    document.getElementById("graficoImpacto"),
+    {
+      type: "doughnut",
+      data: {
+        labels: dadosImpacto.map(
+          item => rotulosImpacto[item.impacto] || item.impacto
+        ),
+        datasets: [{
+          data: dadosImpacto.map(item => item.total),
+          backgroundColor: [
+            "#198754",
+            "#ffc107",
+            "#dc3545"
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
+      }
+    }
+  );
+
+
+  // Gráfico 2: Problemas por status
+
+  const statusProblemas = [
+    "REGISTRADO",
+    "EM_INVESTIGACAO",
+    "ERRO_CONHECIDO",
+    "EM_CORRECAO",
+    "RESOLVIDO",
+    "ENCERRADO"
+  ];
+
+  const coresProblema = {
+    REGISTRADO: "#6c757d",
+    EM_INVESTIGACAO: "#0d6efd",
+    ERRO_CONHECIDO: "#6f42c1",
+    EM_CORRECAO: "#fd7e14",
+    RESOLVIDO: "#198754",
+    ENCERRADO: "#212529"
+  };
+
+  const totaisProblemas = statusProblemas.map(status => {
+    const registro = dadosProblemas.find(
+      item => item.status === status
+    );
+    return registro ? registro.total : 0;
+  });
+
+  new Chart(document.getElementById("graficoProblemas"), {
+    type: "bar",
+    data: {
+      labels: statusProblemas.map(
+        status => rotulosProblema[status]
+      ),
+      datasets: [{
+        label: "Problemas",
+        data: totaisProblemas,
+        backgroundColor: statusProblemas.map(
+          status => coresProblema[status]
+        ),
+        borderRadius: 5,
+        maxBarThickness: 48
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            stepSize: 1
+          },
+          suggestedMax: 3
+        }
+      }
+    }
+  });
+
+
+  // Gráfico 3: Ações corretivas por status
+
+  const statusAcoes = [
+    "ABERTA",
+    "EM_ANDAMENTO",
+    "CONCLUIDA"
+  ];
+
+  const coresAcao = {
+    ABERTA: "#6c757d",
+    EM_ANDAMENTO: "#ffc107",
+    CONCLUIDA: "#198754"
+  };
+
+  const totaisAcoes = statusAcoes.map(status => {
+    const registro = dadosAcoes.find(
+      item => item.status === status
+    );
+    return registro ? registro.total : 0;
+  });
+
+  new Chart(document.getElementById("graficoAcoes"), {
+    type: "bar",
+    data: {
+      labels: statusAcoes.map(
+        status => rotulosAcao[status]
+      ),
+      datasets: [{
+        label: "Ações corretivas",
+        data: totaisAcoes,
+        backgroundColor: statusAcoes.map(
+          status => coresAcao[status]
+        ),
+        borderRadius: 5,
+        maxBarThickness: 60
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            stepSize: 1
+          },
+          suggestedMax: 3
+        }
+      }
+    }
+  });
+
+
+});
+</script>
+
+{% endblock %}
