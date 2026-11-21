@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Q
 
 from contas.models import Perfil
 from problemas.models import Problema
@@ -21,3 +22,15 @@ def registrar_erro_conhecido(*, usuario, problema_id, sintoma, causa, solucao_co
     erro._history_user = usuario
     erro.save()
     return erro
+
+
+def pesquisar_erros(*, usuario, termo=""):
+    exigir_perfil(usuario, Perfil.SUPORTE, Perfil.DESENVOLVEDOR)
+    erros = ErroConhecido.objects.select_related("problema__sistema")
+    for palavra in termo.split():
+        erros = erros.filter(
+            Q(sintoma__icontains=palavra)
+            | Q(causa__icontains=palavra)
+            | Q(solucao_contorno__icontains=palavra)
+        )
+    return erros

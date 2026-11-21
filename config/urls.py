@@ -11,8 +11,8 @@ urlpatterns = [
     path("contas/", include("contas.urls")),
     path("sistemas/", include("sistemas.urls")),
     path("incidentes/", include("incidentes.urls")),
-    # F3: montar include("problemas.urls") após criar os templates do contrato
-    # docs/integracao-problemas-f3.md. Evita expor páginas sem telas.
-    # F3: montar também include("acoes.urls") e include("kedb.urls") após as telas.
+    path("problemas/", include("problemas.urls")),
+    path("acoes/", include("acoes.urls")),
+    path("kedb/", include("kedb.urls")),
     path("dashboard/", include("dashboard.urls")),
 ]

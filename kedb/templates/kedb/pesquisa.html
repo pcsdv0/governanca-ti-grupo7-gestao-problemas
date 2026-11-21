@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Erros conhecidos{% endblock %}
+{% block conteudo %}
+<h1>Base de erros conhecidos</h1>
+<form method="get">
+  <label for="q">Palavra-chave no sintoma, causa ou solução de contorno</label>
+  <input id="q" name="q" type="search" value="{{ q }}">
+  <button type="submit">Pesquisar</button>
+</form>
+{% for erro in pagina %}
+<article class="card card-body my-3">
+  <h2 class="h5"><a href="{% url 'problemas:detalhe' erro.problema_id %}">{{ erro.problema }}</a> · {{ erro.problema.sistema }}</h2>
+  <dl><dt>Sintoma</dt><dd>{{ erro.sintoma }}</dd><dt>Causa</dt><dd>{{ erro.causa }}</dd>
+  <dt>Solução de contorno</dt><dd>{{ erro.solucao_contorno }}</dd></dl>
+</article>
+{% empty %}<p>Nenhum erro conhecido encontrado.</p>{% endfor %}
+{% if pagina.has_previous %}<a href="?q={{ q|urlencode }}&amp;page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+{% if pagina.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ pagina.next_page_number }}">Próxima</a>{% endif %}
+{% endblock %}

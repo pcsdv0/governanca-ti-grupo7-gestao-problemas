@@ -3,8 +3,8 @@ from unittest.mock import patch
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models.deletion import ProtectedError
-from django.test import Client, TestCase, override_settings
-from django.urls import include, path, reverse
+from django.test import Client, TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from contas.models import Perfil, Usuario
@@ -22,46 +22,7 @@ from .services import (
     vincular_incidentes,
 )
 
-# Templates de teste não são telas entregues à aplicação.
-urlpatterns = [
-    path("problemas/", include("problemas.urls")),
-    path("", include("config.urls")),
-]
-TEMPLATES_TESTE = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "APP_DIRS": False,
-        "OPTIONS": {
-            "loaders": [
-                (
-                    "django.template.loaders.locmem.Loader",
-                    {
-                        "problemas/lista.html": (
-                            "{% for p in problemas %}{{ p.titulo }}{% endfor %}"
-                        ),
-                        "problemas/detalhe.html": (
-                            "{{ problema.titulo }} {{ problema.quantidade_incidentes }}"
-                        ),
-                        "problemas/form.html": (
-                            "<form method='post'>{% csrf_token %}{{ form.as_p }}</form>"
-                        ),
-                    },
-                ),
-                "django.template.loaders.app_directories.Loader",
-                "django.template.loaders.filesystem.Loader",
-            ],
-            "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-        "DIRS": ["templates"],
-    }
-]
 
-
-@override_settings(ROOT_URLCONF=__name__, TEMPLATES=TEMPLATES_TESTE)
 class ProblemaBackendTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -542,11 +503,10 @@ class ProblemaBackendTests(TestCase):
         self.assertTrue(resposta.context["form"].errors)
         self.assertFalse(resposta.context["incidentes"].exists())
 
-    @override_settings(ROOT_URLCONF="config.urls")
-    def test_rotas_sem_templates_ainda_nao_expostas(self):
+    def test_rotas_de_problemas_integradas(self):
         self.client.force_login(self.admin)
-        self.assertEqual(self.client.get("/problemas/").status_code, 404)
-        self.assertEqual(self.client.get("/problemas/novo/").status_code, 404)
+        self.assertEqual(self.client.get("/problemas/").status_code, 200)
+        self.assertEqual(self.client.get("/problemas/novo/").status_code, 200)
 
     def test_abertura_revalida_toda_selecao_se_outro_usuario_vincular_antes(self):
         self.client.force_login(self.suporte)

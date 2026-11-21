@@ -23,7 +23,13 @@
       </button>
       <div class="collapse navbar-collapse" id="menu">
         <ul class="navbar-nav me-auto">
-          {# TODO F3: links dos módulos (Incidentes, Problemas, KEDB, Dashboard) conforme o perfil #}
+          <li class="nav-item"><a class="nav-link" href="{% url 'problemas:listar' %}">Problemas</a></li>
+          {% if user.perfil == 'SUPORTE' or user.perfil == 'DESENVOLVEDOR' or user.is_superuser %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'kedb:pesquisar' %}">Erros conhecidos</a></li>
+          {% endif %}
+          {% if user.perfil == 'GESTOR_TI' or user.is_superuser %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:painel' %}">Indicadores e alertas</a></li>
+          {% endif %}
           <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Início</a></li>
         </ul>
         <div class="d-flex align-items-center gap-3 text-white">

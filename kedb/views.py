@@ -1,8 +1,9 @@
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods
 
 from contas.models import Perfil
 from contas.permissoes import perfil_requerido
@@ -11,7 +12,7 @@ from problemas.models import Problema
 
 from .forms import ErroConhecidoForm
 from .models import ErroConhecido
-from .services import registrar_erro_conhecido
+from .services import pesquisar_erros, registrar_erro_conhecido
 
 
 @perfil_requerido(Perfil.DESENVOLVEDOR)
@@ -56,3 +57,13 @@ def registrar(request, problema_pk):
             "titulo": "Registrar ErroConhecido",
         },
     )
+
+
+@perfil_requerido(Perfil.SUPORTE, Perfil.DESENVOLVEDOR)
+@require_GET
+def pesquisar(request):
+    termo = request.GET.get("q", "").strip()
+    pagina = Paginator(pesquisar_erros(usuario=request.user, termo=termo), 30).get_page(
+        request.GET.get("page")
+    )
+    return render(request, "kedb/pesquisa.html", {"q": termo, "pagina": pagina})

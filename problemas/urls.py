@@ -1,5 +1,3 @@
-"""Rotas para a integração com os templates da F3; ainda não montadas em config.urls."""
-
 from django.urls import path
 
 from . import views
@@ -7,6 +5,7 @@ from . import views
 app_name = "problemas"
 
 urlpatterns = [
+    path("<int:pk>/validar-solucao/", views.validar_solucao, name="validar_solucao"),
     path("", views.listar, name="listar"),
     path("novo/", views.cadastrar, name="cadastrar"),
     path("<int:pk>/", views.detalhe, name="detalhe"),

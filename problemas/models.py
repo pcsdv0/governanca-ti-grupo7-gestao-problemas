@@ -39,6 +39,14 @@ class Problema(models.Model):
         blank=True,
         limit_choices_to={"perfil": Perfil.DESENVOLVEDOR},
     )
+    validado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="+",
+        null=True,
+        blank=True,
+        editable=False,
+    )
     history = HistoricalRecords()
 
     class Meta:
