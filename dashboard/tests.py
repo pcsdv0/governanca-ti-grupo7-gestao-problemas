@@ -68,7 +68,7 @@ class PainelTests(TestCase):
         self.assertEqual(dados["por_problema"].get().incidentes_vinculados, 3)
         self.assertEqual(dados["incidentes_sem_problema"], 4)
 
-    def test_tempo_reincidencia_e_percentual_no_fuso_do_projeto(self):
+    def test_tempo_de_resolucao_e_percentual_no_fuso_do_projeto(self):
         problema = Problema.objects.create(sistema=self.sistema, titulo="Queda")
         abertura = self.agora - timedelta(hours=5)
         resolucao = abertura + timedelta(hours=3)
@@ -78,11 +78,6 @@ class PainelTests(TestCase):
         HistoricoStatus.objects.filter(problema=problema, status_novo="RESOLVIDO").update(
             data_alteracao=resolucao
         )
-        self.incidente("Falha antes", resolucao, problema=problema)
-        self.assertEqual(
-            indicadores(usuario=self.gestor, agora=self.agora)["problemas_reincidentes"], 0
-        )
-        self.incidente("Falha depois", resolucao + timedelta(seconds=1), problema=problema)
         # 01:00 UTC já é o dia seguinte em UTC, mas ainda é o dia do prazo em Recife.
         data = datetime(2026, 11, 21, 1, tzinfo=UTC)
         for prazo in (data.date() - timedelta(days=1), data.date() - timedelta(days=2)):
@@ -97,5 +92,35 @@ class PainelTests(TestCase):
         dados = indicadores(usuario=self.gestor, agora=self.agora)
         self.assertEqual(dados["tempo_medio_horas"], 3)
         self.assertEqual(dados["percentual_acoes_no_prazo"], 50)
-        self.assertEqual(dados["problemas_reincidentes"], 1)
         self.assertEqual(dados["problemas_abertos"], 0)
+
+    def test_reincidencia_conta_problema_uma_vez_so_apos_encerramento(self):
+        resolucao = self.agora - timedelta(hours=2)
+        encerramento = self.agora - timedelta(hours=1)
+        problema = Problema.objects.create(sistema=self.sistema, titulo="Falha no portal")
+        problema.status = StatusProblema.RESOLVIDO
+        problema.save()
+        HistoricoStatus.objects.filter(
+            problema=problema, status_novo=StatusProblema.RESOLVIDO
+        ).update(data_alteracao=resolucao)
+        self.incidente("Após a resolução", resolucao + timedelta(minutes=10), problema=problema)
+
+        def total():
+            return indicadores(usuario=self.gestor, agora=self.agora)["problemas_reincidentes"]
+
+        self.assertEqual(total(), 0)
+        problema.status = StatusProblema.ENCERRADO
+        problema.save()
+        HistoricoStatus.objects.filter(
+            problema=problema, status_novo=StatusProblema.ENCERRADO
+        ).update(data_alteracao=encerramento)
+        self.incidente("No instante do encerramento", encerramento, problema=problema)
+        self.incidente("Ocorrência futura", self.agora + timedelta(seconds=1), problema=problema)
+        self.incidente("Sem vínculo", self.agora)
+        self.assertEqual(total(), 0)
+        self.incidente(
+            "Primeira reincidência", encerramento + timedelta(microseconds=1), problema=problema
+        )
+        self.assertEqual(total(), 1)
+        self.incidente("Segunda reincidência", self.agora, problema=problema)
+        self.assertEqual(total(), 1)

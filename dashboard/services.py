@@ -60,17 +60,17 @@ def _resolucao_e_reincidencia(agora):
         ),
     )
     media = resolvidos.aggregate(tempo=Avg(F("resolucao") - F("registro")))["tempo"]
-    ultima_resolucao = (
+    ultimo_encerramento = (
         HistoricoStatus.objects.filter(
-            problema_id=OuterRef("problema_id"), status_novo=StatusProblema.RESOLVIDO
+            problema_id=OuterRef("problema_id"), status_novo=StatusProblema.ENCERRADO
         )
         .order_by("-data_alteracao")
         .values("data_alteracao")[:1]
     )
     reincidentes = (
         Incidente.objects.filter(
-            problema__status__in=[StatusProblema.RESOLVIDO, StatusProblema.ENCERRADO],
-            data_ocorrencia__gt=Subquery(ultima_resolucao),
+            problema__status=StatusProblema.ENCERRADO,
+            data_ocorrencia__gt=Subquery(ultimo_encerramento),
             data_ocorrencia__lte=agora,
         )
         .order_by()

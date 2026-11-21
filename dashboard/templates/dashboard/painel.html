@@ -6,7 +6,7 @@
   <dt>Problemas em aberto</dt><dd>{{ problemas_abertos }}</dd>
   <dt>Tempo médio do registro à resolução mais recente (horas)</dt><dd>{{ tempo_medio_horas|floatformat:2|default:"Sem dados" }}</dd>
   <dt>Ações concluídas no prazo (%)</dt><dd>{{ percentual_acoes_no_prazo|floatformat:2|default:"Sem dados" }}</dd>
-  <dt>Problemas com novo incidente após a resolução</dt><dd>{{ problemas_reincidentes }}</dd>
+  <dt>Problemas com novo incidente após o encerramento</dt><dd>{{ problemas_reincidentes }}</dd>
 </dl>
 <h2>Alertas de recorrência nos últimos 30 dias</h2>
 <ul>{% for alerta in alertas %}<li>{{ alerta.sistema }} · {{ alerta.tipo }} {{ alerta.chave }} · {{ alerta.quantidade }} incidentes</li>

@@ -80,7 +80,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Acesse <http://127.0.0.1:8000> e entre com o usuário criado. Para criar usuários com outros perfis, use o admin em <http://127.0.0.1:8000/admin/> (campo "Perfil").
+Acesse <http://127.0.0.1:8000> e entre com o usuário criado. Para cadastrar ou editar usuários e atribuir perfis (RF02), o Gestor de TI acessa **Gerenciar usuários** na página inicial ou `/contas/usuarios/`.
 
 ### Opção 2: Docker (plano B da apresentação)
 
@@ -158,10 +158,10 @@ $env:DEBUG = "True"
 ## Funcionalidades da versão final
 
 - **RF13 — Validação e encerramento.** Em um problema resolvido com todas as ações concluídas, o responsável pelo sistema valida a solução ou a devolve para investigação. A decisão registra autor e data na linha do tempo. O gestor encerra o problema validado. Criar outra ação invalida o aceite anterior.
-- **RF18 — Pesquisa na KEDB.** Suporte e Desenvolvedor consultam `/kedb/` e podem combinar palavras de sintoma, causa e solução de contorno. A lista inclui a solução e o problema de origem.
+- **RF18 — Pesquisa na KEDB.** Suporte e Desenvolvedor consultam `/kedb/` e podem combinar palavras de sintoma, causa e solução de contorno. A lista inclui a solução de contorno e o problema de origem. Para RF17/RF18, prevalecem os campos do planejamento ajustado da AV2 (seções 4 e 5).
 - **RF29 — Recorrência.** O painel do gestor sinaliza grupos de três ou mais incidentes do mesmo sistema, ocorridos entre agora e 30 dias atrás, inclusive. Um grupo reúne incidentes ligados ao mesmo problema ou com o mesmo título após normalizar caixa e espaços. Grupos idênticos aparecem uma vez e o total por sistema conta cada incidente uma vez.
 - **RF25/RF26 — Indicadores.** Em `/dashboard/`, o gestor consulta incidentes e problemas por sistema, incidentes por problema e a distribuição pelo status do problema. Incidentes sem vínculo aparecem em separado. Problemas em aberto são os que ainda não chegaram a Resolvido ou Encerrado.
-- O tempo médio usa o intervalo entre registro e última resolução dos problemas atualmente resolvidos ou encerrados. A reincidência conta quantos desses problemas tiveram novo incidente após a última resolução. O percentual no prazo usa as ações concluídas com histórico de conclusão e compara o dia local em Recife ao prazo. Médias e percentuais sem amostra aparecem como “Sem dados”.
+- O tempo médio usa o intervalo entre registro e última resolução dos problemas atualmente resolvidos ou encerrados. A reincidência conta cada problema encerrado uma única vez quando há incidente vinculado com ocorrência posterior ao encerramento e até o momento da consulta. O percentual no prazo usa as ações concluídas com histórico de conclusão e compara o dia local em Recife ao prazo. Médias e percentuais sem amostra aparecem como “Sem dados”.
 
 ## Testes e lint
 

@@ -10,6 +10,7 @@
   <li><a href="{% url 'incidentes:listar' %}">Consultar incidentes</a></li>
   <li><a href="{% url 'problemas:listar' %}">Consultar problemas e ações corretivas</a></li>
   {% if user.is_superuser or user.perfil == 'GESTOR_TI' %}
+  <li><a href="{% url 'contas:usuarios' %}">Gerenciar usuários</a></li>
   <li><a href="{% url 'sistemas:listar' %}">Gerenciar sistemas</a></li>
   <li><a href="{% url 'dashboard:painel' %}">Consultar indicadores e alertas</a></li>
   {% endif %}
