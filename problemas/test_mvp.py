@@ -1,12 +1,11 @@
-from copy import deepcopy
 from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase, override_settings
-from django.urls import include, path, reverse
+from django.test import Client, TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from acoes.constantes import StatusAcaoCorretiva
@@ -18,27 +17,11 @@ from kedb.models import ErroConhecido
 from kedb.services import registrar_erro_conhecido
 from sistemas.models import Sistema
 
-from . import test_backend
 from .constantes import StatusProblema
 from .models import CausaRaiz, HistoricoStatus, Problema
-from .services import abrir_problema, alterar_status, registrar_causa_raiz
-
-urlpatterns = [
-    path("problemas/", include("problemas.urls")),
-    path("acoes/", include("acoes.urls")),
-    path("kedb/", include("kedb.urls")),
-    path("", include("config.urls")),
-]
-TEMPLATES_TESTE = deepcopy(test_backend.TEMPLATES_TESTE)
-TEMPLATES_TESTE[0]["OPTIONS"]["loaders"][0][1].update(
-    {
-        "acoes/form.html": "<form method='post'>{% csrf_token %}{{ form.as_p }}</form>",
-        "kedb/form.html": "<form method='post'>{% csrf_token %}{{ form.as_p }}</form>",
-    }
-)
+from .services import abrir_problema, alterar_status, registrar_causa_raiz, validar_solucao
 
 
-@override_settings(ROOT_URLCONF=__name__, TEMPLATES=TEMPLATES_TESTE)
 class BackendMvpTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -121,6 +104,11 @@ class BackendMvpTests(TestCase):
     def resolver(self):
         for status in StatusProblema.values[1:-1]:
             alterar_status(usuario=self.dev, problema_id=self.problema.pk, status=status)
+
+    def validar(self, decisao="validar", usuario=None):
+        return validar_solucao(
+            usuario=usuario or self.responsavel, problema_id=self.problema.pk, decisao=decisao
+        )
 
     def encerrar(self, usuario=None):
         return alterar_status(
@@ -260,6 +248,10 @@ class BackendMvpTests(TestCase):
         self.problema.refresh_from_db()
         self.assertEqual(self.problema.status, StatusProblema.RESOLVIDO)
         self.concluir(segunda)
+        with self.assertRaises(ValidationError) as contexto:
+            self.encerrar()
+        self.assertEqual(contexto.exception.code, "validacao_pendente")
+        self.validar()
         encerrado = self.encerrar()
         self.assertEqual(encerrado.status, StatusProblema.ENCERRADO)
         self.assertEqual(encerrado.history.first().history_user, self.gestor)
@@ -272,6 +264,7 @@ class BackendMvpTests(TestCase):
         self.concluir(self.acao())
         with self.assertRaises(PermissionDenied):
             self.encerrar(usuario=self.dev)
+        self.validar()
         self.encerrar()
         with self.assertRaises(ValidationError):
             alterar_status(
@@ -284,6 +277,7 @@ class BackendMvpTests(TestCase):
         acao = self.acao()
         self.concluir(acao)
         self.resolver()
+        self.validar()
         self.encerrar()
         for usuario in (self.gestor, self.dev, self.admin):
             with self.subTest(usuario=usuario), self.assertRaises(ValidationError) as contexto:
@@ -304,6 +298,9 @@ class BackendMvpTests(TestCase):
         with self.assertRaises(ValidationError):
             self.encerrar(usuario=self.admin)
         self.concluir(acao, usuario=self.admin)
+        with self.assertRaises(ValidationError):
+            self.encerrar(usuario=self.admin)
+        self.validar()
         encerrado = self.encerrar(usuario=self.admin)
         self.assertEqual(encerrado.historico_status.last().usuario, self.admin)
 
@@ -333,12 +330,57 @@ class BackendMvpTests(TestCase):
         self.assertEqual(causa.descricao, "Conexões não liberadas")
         self.resolver()
         self.concluir(self.acao())
+        self.validar()
         with patch.object(HistoricoStatus, "save", side_effect=RuntimeError("Histórico")):
             with self.assertRaises(RuntimeError):
                 self.encerrar()
         self.problema.refresh_from_db()
         self.assertEqual(self.problema.status, "RESOLVIDO")
         self.assertEqual(self.problema.history.first().status, "RESOLVIDO")
+
+    def test_validacao_http_respeita_responsavel_atual_e_metodo(self):
+        self.resolver()
+        self.concluir(self.acao())
+        url = reverse("problemas:validar_solucao", args=[self.problema.pk])
+        self.client.force_login(self.outro_responsavel)
+        self.assertEqual(self.client.post(url, {"decisao": "validar"}).status_code, 403)
+        self.client.force_login(self.responsavel)
+        self.assertEqual(self.client.get(url).status_code, 405)
+        self.assertContains(
+            self.client.get(reverse("problemas:detalhe", args=[self.problema.pk])),
+            "Validar solução",
+        )
+        self.assertEqual(self.client.post(url, {"decisao": "validar"}).status_code, 302)
+        self.sistema.responsavel = self.outro_responsavel
+        self.sistema.save()
+        with self.assertRaises(ValidationError) as erro:
+            self.encerrar()
+        self.assertEqual(erro.exception.code, "validacao_pendente")
+        self.validar(usuario=self.outro_responsavel)
+        self.encerrar()
+
+    def test_validacao_recusa_reinvestigacao_e_nova_acao(self):
+        self.resolver()
+        self.concluir(self.acao())
+        for usuario in (self.outro_responsavel, self.gestor):
+            with self.assertRaises(PermissionDenied):
+                self.validar(usuario=usuario)
+        rejeitado = self.validar("rejeitar")
+        self.assertEqual(rejeitado.status, StatusProblema.EM_INVESTIGACAO)
+        self.assertEqual(rejeitado.history.first().history_change_reason, "Solução rejeitada")
+        self.assertEqual(rejeitado.historico_status.last().usuario, self.responsavel)
+        for status in StatusProblema.values[2:-1]:
+            alterar_status(usuario=self.dev, problema_id=rejeitado.pk, status=status)
+        self.validar()
+        self.validar()
+        self.assertEqual(
+            rejeitado.history.filter(history_change_reason="Solução validada").count(), 1
+        )
+        self.concluir(self.acao())
+        with self.assertRaises(ValidationError):
+            self.encerrar()
+        self.validar()
+        self.encerrar()
 
     def test_matriz_http_dos_quatro_perfis_login_metodos_e_get_sem_gravacao(self):
         acao = self.acao()
@@ -553,6 +595,8 @@ class BackendMvpTests(TestCase):
         self.concluir(self.acao())
         self.client.force_login(self.gestor)
 
+        self.validar()
+
         def encerrar_antes_de_criar(**dados):
             self.encerrar()
             return criar_acao(**dados)
@@ -652,6 +696,13 @@ class BackendMvpTests(TestCase):
                 302,
             )
         self.assertEqual(self.client.post(status_url, {"status": "RESOLVIDO"}).status_code, 302)
+        self.client.force_login(self.responsavel)
+        self.assertEqual(
+            self.client.post(
+                reverse("problemas:validar_solucao", args=[problema.pk]), {"decisao": "validar"}
+            ).status_code,
+            302,
+        )
         self.client.force_login(self.gestor)
         self.assertEqual(self.client.post(status_url, {"status": "ENCERRADO"}).status_code, 302)
         problema.refresh_from_db()
@@ -661,14 +712,13 @@ class BackendMvpTests(TestCase):
         detalhe = self.client.get(reverse("problemas:detalhe", args=[problema.pk]))
         self.assertEqual(detalhe.status_code, 200)
         self.assertEqual(detalhe.context["problema"].quantidade_incidentes, 1)
-        self.assertEqual(len(detalhe.context["linha_do_tempo"]), 12)
+        self.assertEqual(len(detalhe.context["linha_do_tempo"]), 13)
 
-    @override_settings(ROOT_URLCONF="config.urls")
-    def test_rotas_novas_aguardam_telas_da_f3(self):
+    def test_rotas_integradas(self):
         self.client.force_login(self.admin)
         for url in (
             f"/problemas/{self.problema.pk}/causa-raiz/",
             f"/acoes/problema/{self.problema.pk}/nova/",
             f"/kedb/problema/{self.problema.pk}/registrar/",
         ):
-            self.assertEqual(self.client.get(url).status_code, 404)
+            self.assertEqual(self.client.get(url).status_code, 200)

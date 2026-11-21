@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from acoes.models import AcaoCorretiva
 from contas.models import Perfil
@@ -212,3 +212,19 @@ def registrar_causa_raiz(request, pk):
             "titulo": "Registrar CausaRaiz",
         },
     )
+
+
+@perfil_requerido(Perfil.RESPONSAVEL_SISTEMA)
+@require_POST
+def validar_solucao(request, pk):
+    try:
+        services.validar_solucao(
+            usuario=request.user, problema_id=pk, decisao=request.POST.get("decisao")
+        )
+    except Problema.DoesNotExist as erro:
+        raise Http404("Problema não encontrado.") from erro
+    except ValidationError as erro:
+        messages.error(request, " ".join(erro.messages))
+    else:
+        messages.success(request, "Decisão registrada.")
+    return redirect("problemas:detalhe", pk=pk)

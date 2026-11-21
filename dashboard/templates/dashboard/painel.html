@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Indicadores{% endblock %}
+{% block conteudo %}
+<h1>Indicadores de gestão de problemas</h1>
+<dl>
+  <dt>Problemas em aberto</dt><dd>{{ problemas_abertos }}</dd>
+  <dt>Tempo médio do registro à resolução mais recente (horas)</dt><dd>{{ tempo_medio_horas|floatformat:2|default:"Sem dados" }}</dd>
+  <dt>Ações concluídas no prazo (%)</dt><dd>{{ percentual_acoes_no_prazo|floatformat:2|default:"Sem dados" }}</dd>
+  <dt>Problemas com novo incidente após a resolução</dt><dd>{{ problemas_reincidentes }}</dd>
+</dl>
+<h2>Alertas de recorrência nos últimos 30 dias</h2>
+<ul>{% for alerta in alertas %}<li>{{ alerta.sistema }} · {{ alerta.tipo }} {{ alerta.chave }} · {{ alerta.quantidade }} incidentes</li>
+{% empty %}<li>Nenhum grupo atingiu três ocorrências.</li>{% endfor %}</ul>
+<h2>Incidentes e problemas por sistema</h2>
+<table class="table"><thead><tr><th>Sistema</th><th>Incidentes</th><th>Incidentes recorrentes em 30 dias</th><th>Problemas</th></tr></thead>
+<tbody>{% for s in por_sistema %}<tr><th>{{ s.nome }}</th><td>{{ s.total_incidentes }}</td><td>{{ s.incidentes_recorrentes }}</td><td>{{ s.total_problemas }}</td></tr>{% endfor %}</tbody></table>
+<h2>Distribuição por status do problema</h2>
+<table class="table"><thead><tr><th>Status</th><th>Problemas</th><th>Incidentes vinculados</th></tr></thead>
+<tbody>{% for linha in por_status %}<tr><th>{{ linha.nome }}</th><td>{{ linha.problemas }}</td><td>{{ linha.incidentes }}</td></tr>{% endfor %}</tbody></table>
+<p>Incidentes sem problema vinculado: {{ incidentes_sem_problema }}</p>
+<h2>Incidentes por problema</h2>
+<ul>{% for p in por_problema %}<li><a href="{% url 'problemas:detalhe' p.pk %}">{{ p.titulo }}</a> · {{ p.incidentes_vinculados }}</li>
+{% empty %}<li>Nenhum problema registrado.</li>{% endfor %}</ul>
+{% endblock %}

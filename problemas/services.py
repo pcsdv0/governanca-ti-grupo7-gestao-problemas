@@ -9,6 +9,7 @@ from acoes.models import AcaoCorretiva
 from contas.models import Perfil, Usuario
 from contas.permissoes import usuario_tem_perfil
 from incidentes.models import Incidente
+from sistemas.models import Sistema
 
 from .constantes import StatusProblema
 from .models import CausaRaiz, Problema
@@ -110,6 +111,43 @@ def atribuir_responsavel_prioridade(*, usuario, problema_id, responsavel_id, pri
     return problema
 
 
+def _exigir_acoes_concluidas(problema):
+    acoes = AcaoCorretiva.objects.filter(problema=problema)
+    if not acoes.exists():
+        raise ValidationError(
+            "O encerramento exige ao menos uma AçãoCorretiva concluída.", code="sem_acoes"
+        )
+    if acoes.exclude(status=StatusAcaoCorretiva.CONCLUIDA).exists():
+        raise ValidationError(
+            "Conclua todas as Ações Corretivas antes de encerrar o Problema.",
+            code="acoes_pendentes",
+        )
+
+
+@transaction.atomic
+def validar_solucao(*, usuario, problema_id, decisao):
+    exigir_perfil(usuario, Perfil.RESPONSAVEL_SISTEMA)
+    problema = Problema.objects.select_for_update().get(pk=problema_id)
+    sistema = Sistema.objects.select_for_update().get(pk=problema.sistema_id)
+    if not usuario.is_superuser and sistema.responsavel_id != usuario.pk:
+        raise PermissionDenied("A validação cabe ao responsável pelo sistema afetado.")
+    if problema.status != StatusProblema.RESOLVIDO or decisao not in ("validar", "rejeitar"):
+        raise ValidationError("Selecione uma decisão válida para um problema resolvido.")
+    _exigir_acoes_concluidas(problema)
+    if decisao == "validar":
+        if problema.validado_por_id == usuario.pk:
+            return problema
+        problema.validado_por = usuario
+        problema._change_reason = "Solução validada"
+    else:
+        problema.status = StatusProblema.EM_INVESTIGACAO
+        problema.validado_por = None
+        problema._change_reason = "Solução rejeitada"
+    problema._history_user = usuario
+    problema.save(update_fields=["validado_por", "status"])
+    return problema
+
+
 @transaction.atomic
 def alterar_status(*, usuario, problema_id, status):
     exigir_perfil(usuario, Perfil.DESENVOLVEDOR, Perfil.GESTOR_TI)
@@ -122,16 +160,15 @@ def alterar_status(*, usuario, problema_id, status):
         )
     if status == StatusProblema.ENCERRADO:
         exigir_perfil(usuario, Perfil.GESTOR_TI)
-        acoes = AcaoCorretiva.objects.filter(problema=problema)
-        if not acoes.exists():
+        _exigir_acoes_concluidas(problema)
+        sistema = Sistema.objects.select_for_update().get(pk=problema.sistema_id)
+        if not problema.validado_por_id or (
+            problema.validado_por_id != sistema.responsavel_id
+            and not problema.validado_por.is_superuser
+        ):
             raise ValidationError(
-                "O encerramento exige ao menos uma AçãoCorretiva concluída.",
-                code="sem_acoes",
-            )
-        if acoes.exclude(status=StatusAcaoCorretiva.CONCLUIDA).exists():
-            raise ValidationError(
-                "Conclua todas as Ações Corretivas antes de encerrar o Problema.",
-                code="acoes_pendentes",
+                "A solução aguarda validação do responsável pelo sistema.",
+                code="validacao_pendente",
             )
     # Validações de atribuição pertencem ao RF11. Uma mudança posterior do perfil
     # do responsável não impede o registro da evolução técnica.

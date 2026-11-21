@@ -2,7 +2,7 @@
 
 Sistema web de **Gestão de Problemas** baseado no ITIL 4 e no COBIT 2019 (DSS02 - Gerenciar solicitações de serviço e incidentes; DSS03 - Gerenciar problemas). Projeto da disciplina de Governança de TI, 6º período, UNINASSAU.
 
-> **Situação atual:** o **backend F2 do MVP** está implementado: Sistemas, Incidentes, Problemas, CausaRaiz, criação/atualização de ErroConhecido, Ações Corretivas, encerramento condicionado à conclusão das ações e auditoria. As telas de Problemas, CausaRaiz, ErroConhecido e Ações Corretivas continuam com a F3; suas rotas públicas aguardam essa integração. Pesquisa na KEDB, alerta de recorrência, dashboard e validação final de encerramento são da versão final. O escopo exato está em [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md).
+> **Versão final do backend.** As rotas de Problemas, Ações Corretivas, busca na KEDB e indicadores estão ativas. Após atualizar uma instalação do MVP, execute `python manage.py migrate` para adicionar a validação da solução aos problemas e ao histórico. Problemas já encerrados conservam seus registros.
 
 ## O problema que resolvemos
 
@@ -41,12 +41,12 @@ Versões fixadas em [requirements.txt](requirements.txt). Motivos das escolhas e
 │   └── permissoes.py    #      perfil_requerido e PerfilRequeridoMixin
 ├── sistemas/            # F2 - Sistemas: modelo, formulários, views, templates, admin e testes
 ├── incidentes/          # F2 - Cadastro, edição, filtros, auditoria e FK para Problema
-├── problemas/           # F1/F2 - Problemas, causa raiz e histórico; telas com F3
+├── problemas/           # F1/F2 - Problemas, causa raiz, validação e histórico
 │   └── constantes.py    #      status do Problema
 ├── acoes/               # F2 - Ações corretivas e histórico; telas com F3
 │   └── constantes.py    #      status da Ação corretiva
-├── kedb/                # F2 - Registro de ErroConhecido (MVP); pesquisa na Entrega 3
-├── dashboard/           # F3 - Indicadores (vazio, Entrega 3)
+├── kedb/                # F2 - Registro e pesquisa de erros conhecidos
+├── dashboard/           # Indicadores gerenciais e alertas de recorrência
 ├── templates/           # base.html, inicio.html, 403.html, registration/login.html
 ├── static/              # CSS próprio
 ├── docs/                # Documentação do projeto
@@ -95,7 +95,7 @@ Acesse <http://localhost:8000>. Para parar: `Ctrl+C` e `docker compose down` (os
 
 ## Sistemas (RF04)
 
-Após configurar o ambiente e executar `python manage.py migrate`, entre no sistema e acesse <http://127.0.0.1:8000/sistemas/>. A navegação global continua sob responsabilidade da F3; o módulo pode ser aberto diretamente pelo endereço.
+Após configurar o ambiente e executar `python manage.py migrate`, entre no sistema e acesse <http://127.0.0.1:8000/sistemas/>.
 
 - **Listar:** `/sistemas/`.
 - **Cadastrar:** `/sistemas/novo/`.
@@ -124,23 +124,18 @@ Após executar `python manage.py migrate`, acesse <http://127.0.0.1:8000/inciden
 
 Para conferir: registre um Incidente como Suporte, filtre por Sistema e pelo dia da ocorrência, edite com o próprio autor e com um Gestor e verifique a preservação de `registrado_por` e os editores em `history_user`. Outro usuário Suporte deve receber 403 ao tentar editar esse registro.
 
-A FK opcional para `problemas.Problema` e o filtro por vínculo estão implementados. O vínculo é feito pelos serviços/views de Problemas (RF07), com tela pendente da F3. Um Incidente vinculado não pode trocar para outro Sistema na edição comum; seu autor original e vínculo são preservados. Veja [docs/modelo-de-dados.md](docs/modelo-de-dados.md).
+A FK opcional para `problemas.Problema` e o filtro por vínculo estão implementados. O vínculo é feito pelos serviços/views de Problemas (RF07). Um Incidente vinculado não pode trocar para outro Sistema na edição comum; seu autor original e vínculo são preservados. Veja [docs/modelo-de-dados.md](docs/modelo-de-dados.md).
 
-Os templates mínimos reaproveitam a estrutura visual existente. Os links na página inicial e o requisito de acesso em até três cliques serão integrados com a F3.
-
-## Problemas — backend implementado, telas com a F3
-
-Nesta etapa, a F2 implementou o backend de Problemas por solicitação expressa, sem alterar a divisão geral da equipe abaixo.
+## Problemas
 
 - Suporte abre um Problema a partir de um ou mais Incidentes do mesmo Sistema e vincula outros Incidentes.
 - A abertura usa status Registrado, responsável não atribuído e prioridade não atribuída.
 - Gestor de TI atribui um Desenvolvedor e prioridade Baixa, Média ou Alta.
 - Desenvolvedor e Gestor avançam na sequência Registrado → Em investigação → Erro conhecido → Em correção → Resolvido.
-- Gestor de TI encerra a partir de Resolvido somente quando existe pelo menos uma AçãoCorretiva e todas estão Concluídas. Superusuário também precisa atender à regra. Após encerramento, novas ações e alterações de status das ações são bloqueadas. Não há saltos, reabertura, transferência, desvinculação ou exclusão.
+- Gestor de TI encerra a partir de Resolvido somente quando existe pelo menos uma AçãoCorretiva e todas estão Concluídas, após a validação da solução pelo Responsável pelo sistema. Superusuário também precisa atender à regra. Após encerramento, novas ações e alterações de status das ações são bloqueadas. Não há saltos, reabertura, transferência, desvinculação ou exclusão.
 - Consulta inclui contagem de incidentes, CausaRaiz, ErroConhecido, ações, histórico de status e linha do tempo de alterações. Responsável pelo sistema consulta somente seus sistemas.
-- Modelos, migrations, serviços transacionais, formulários e views estão implementados e testáveis sem telas finais.
 
-**Acesso:** `/problemas/`, `/acoes/` e `/kedb/` ainda não têm rotas públicas. A F3 deve entregar os templates e ativar os includes documentados em [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md). Não há API REST nem escrita desses módulos pelo admin.
+O detalhe em `/problemas/<id>/` reúne as operações permitidas a cada perfil, incluindo a validação da solução e o acesso às ações corretivas.
 
 No PowerShell, na raiz do projeto:
 
@@ -151,8 +146,6 @@ $env:DEBUG = "True"
 .\.venv\Scripts\python.exe manage.py runserver
 ```
 
-A aplicação permite conferir o filtro novo em `/incidentes/`. Os testes de Problemas verificam as views usando templates em memória exclusivos dos testes. O contrato da F3 detalha campos, contextos, nomes de URL e permissões.
-
 ## CausaRaiz, ErroConhecido e Ações Corretivas — backend do MVP
 
 - **RF15:** qualquer Desenvolvedor cadastra ou atualiza uma CausaRaiz por Problema, com descrição e análise dos 5 Porquês em texto.
@@ -162,7 +155,13 @@ A aplicação permite conferir o filtro novo em `/incidentes/`. Os testes de Pro
 - **RF23/RF24:** os três modelos usam django-simple-history, com autor, data e valores. O detalhe de Problema reúne os registros e seus históricos, respeitando o escopo por Sistema.
 - A exceção de superusuário preserva as validações de negócio. Não há exclusão.
 
-RF17 pertence ao MVP, conforme o planejamento da AV2. Somente a consulta/pesquisa global na KEDB (RF18) fica para a versão final. O registro também pode ser consultado no detalhe autorizado do Problema.
+## Funcionalidades da versão final
+
+- **RF13 — Validação e encerramento.** Em um problema resolvido com todas as ações concluídas, o responsável pelo sistema valida a solução ou a devolve para investigação. A decisão registra autor e data na linha do tempo. O gestor encerra o problema validado. Criar outra ação invalida o aceite anterior.
+- **RF18 — Pesquisa na KEDB.** Suporte e Desenvolvedor consultam `/kedb/` e podem combinar palavras de sintoma, causa e solução de contorno. A lista inclui a solução e o problema de origem.
+- **RF29 — Recorrência.** O painel do gestor sinaliza grupos de três ou mais incidentes do mesmo sistema, ocorridos entre agora e 30 dias atrás, inclusive. Um grupo reúne incidentes ligados ao mesmo problema ou com o mesmo título após normalizar caixa e espaços. Grupos idênticos aparecem uma vez e o total por sistema conta cada incidente uma vez.
+- **RF25/RF26 — Indicadores.** Em `/dashboard/`, o gestor consulta incidentes e problemas por sistema, incidentes por problema e a distribuição pelo status do problema. Incidentes sem vínculo aparecem em separado. Problemas em aberto são os que ainda não chegaram a Resolvido ou Encerrado.
+- O tempo médio usa o intervalo entre registro e última resolução dos problemas atualmente resolvidos ou encerrados. A reincidência conta quantos desses problemas tiveram novo incidente após a última resolução. O percentual no prazo usa as ações concluídas com histórico de conclusão e compara o dia local em Recife ao prazo. Médias e percentuais sem amostra aparecem como “Sem dados”.
 
 ## Testes e lint
 
@@ -174,7 +173,7 @@ ruff format --check .                          # confere a formatação
 python manage.py makemigrations --check --dry-run   # confere se falta migration
 ```
 
-Para testar os módulos desta entrega: `python manage.py test sistemas incidentes problemas acoes kedb`. Se precisar formatar, passe ao `ruff format` somente os arquivos alterados.
+Para testar os módulos desta entrega: `python manage.py test sistemas incidentes problemas acoes kedb dashboard`. Se precisar formatar, passe ao `ruff format` somente os arquivos alterados.
 
 O GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) roda lint, `manage.py check`, a checagem de migrations e os testes a cada push e pull request.
 
@@ -238,7 +237,9 @@ Responsáveis e backups em [docs/EQUIPE.md](docs/EQUIPE.md).
 - [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md): contrato das views, formulários, contextos e ativação das telas
 - [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits e pull requests
 
-## O que já existe e o que falta
+## Situação registrada na entrega do MVP
+
+O quadro abaixo preserva o escopo histórico da Entrega 2. O funcionamento atual está na seção **Funcionalidades da versão final**.
 
 | Pronto | A implementar |
 |---|---|

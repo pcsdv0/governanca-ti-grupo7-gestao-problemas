@@ -33,6 +33,11 @@ def criar_acao(*, usuario, problema_id, descricao, prazo, responsavel_id):
     acao.full_clean()
     acao._history_user = usuario
     acao.save()
+    if problema.validado_por_id:
+        problema.validado_por = None
+        problema._history_user = usuario
+        problema._change_reason = "Nova ação requer outra validação"
+        problema.save(update_fields=["validado_por"])
     return acao
 
 

@@ -1,0 +1,95 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block conteudo %}
+
+<div class="mb-4">
+  <a href="{% if problema %}{% url 'problemas:detalhe' problema.pk %}{% else %}{% url 'problemas:listar' %}{% endif %}"
+     class="text-decoration-none">
+    <i class="bi bi-arrow-left"></i> Voltar
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+
+    <div class="mb-3">
+      <h1 class="h3 fw-bold">{{ titulo }}</h1>
+
+      {% if problema %}
+        <p class="text-body-secondary mb-0">
+          Problema: {{ problema.titulo }}
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          {% for field in form %}
+            <div class="mb-3">
+
+              <label for="{{ field.id_for_label }}"
+                     class="form-label fw-semibold">
+                {{ field.label }}
+              </label>
+
+              <div>
+  {% if field.field.widget.input_type == "select" %}
+    <div class="campo-selecao">
+      {{ field }}
+    </div>
+  {% else %}
+    <div class="campo-formulario">
+      {{ field }}
+    </div>
+  {% endif %}
+</div>
+
+              {% if field.help_text %}
+                <div class="form-text">
+                  {{ field.help_text }}
+                </div>
+              {% endif %}
+
+              {% if field.errors %}
+                <div class="text-danger small mt-1">
+                  {{ field.errors }}
+                </div>
+              {% endif %}
+
+            </div>
+          {% endfor %}
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% if problema %}{% url 'problemas:detalhe' problema.pk %}{% else %}{% url 'problemas:listar' %}{% endif %}"
+               class="btn btn-outline-secondary">
+              Cancelar
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle"></i>
+              Salvar
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

@@ -1,5 +1,3 @@
-"""Rotas de Ações Corretivas, aguardando as telas da F3 em config.urls."""
-
 from django.urls import path
 
 from . import views
