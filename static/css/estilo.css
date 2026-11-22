@@ -127,3 +127,29 @@
     min-height: calc(100vh - 60px);
   }
 }
+
+/* Campos de formulário renderizados direto pelo Django ({{ field }}), sem as classes do
+   Bootstrap: recebem o mesmo visual de .form-control/.form-select. */
+.area-principal form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not(.form-control):not(.form-select),
+.area-principal form textarea:not(.form-control),
+.area-principal form select:not(.form-select) {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.area-principal form input:not([type="checkbox"]):not([type="radio"]):not(.form-control):focus,
+.area-principal form textarea:not(.form-control):focus,
+.area-principal form select:not(.form-select):focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.area-principal form select[multiple]:not(.form-select) { min-height: 10rem; }
+.area-principal form .input-group > input { width: 1%; }
