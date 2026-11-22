@@ -140,7 +140,12 @@
               <div>
                 <strong>{{ alerta.sistema }}</strong>
                 <p class="text-body-secondary small mb-0">
-                  {{ alerta.tipo }}: {{ alerta.chave }}
+                  {% if alerta.problema_id %}
+                    Problema:
+                    <a href="{% url 'problemas:detalhe' alerta.problema_id %}">{{ alerta.descricao }}</a>
+                  {% else %}
+                    Incidentes com o mesmo título: “{{ alerta.descricao }}”
+                  {% endif %}
                 </p>
               </div>
               <span class="badge text-bg-warning align-self-center">

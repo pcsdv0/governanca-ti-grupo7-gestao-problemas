@@ -110,8 +110,19 @@ def indicadores(*, usuario, agora=None):
     nomes = {s.pk: s.nome for s in sistemas}
     for sistema in sistemas:
         sistema.incidentes_recorrentes = len(recorrentes.get(sistema.pk, ()))
+    titulos = dict(
+        Problema.objects.filter(
+            pk__in=[a["chave"] for a in alertas if a["tipo"] == "Problema"]
+        ).values_list("pk", "titulo")
+    )
     for alerta in alertas:
         alerta["sistema"] = nomes[alerta["sistema_id"]]
+        # Rótulo legível para a tela: o título do Problema, ou o título comum dos Incidentes.
+        if alerta["tipo"] == "Problema":
+            alerta["problema_id"] = alerta["chave"]
+            alerta["descricao"] = titulos.get(alerta["chave"], f"Problema {alerta['chave']}")
+        else:
+            alerta["descricao"] = alerta["chave"]
 
     problemas = Problema.objects.annotate(incidentes_vinculados=Count("incidentes"))
     por_status = dict(
