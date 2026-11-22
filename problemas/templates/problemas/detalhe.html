@@ -108,6 +108,13 @@
         <strong>Responsável:</strong><br>
         {{ problema.responsavel|default:"Não atribuído" }}
       </div>
+
+      <!-- RF12: contagem de ocorrências (Incidentes vinculados ao Problema) -->
+      <div class="col-md-4 mb-2">
+        <strong>Ocorrências:</strong><br>
+        <span id="contagem-ocorrencias">{{ problema.quantidade_incidentes }}</span>
+        Incidente{{ problema.quantidade_incidentes|pluralize }} vinculado{{ problema.quantidade_incidentes|pluralize }}
+      </div>
     </div>
   </div>
 </div>
@@ -121,7 +128,7 @@
             data-bs-target="#incidentes"
             type="button"
             role="tab">
-      Incidentes vinculados
+      Incidentes vinculados ({{ problema.quantidade_incidentes }})
     </button>
   </li>
 

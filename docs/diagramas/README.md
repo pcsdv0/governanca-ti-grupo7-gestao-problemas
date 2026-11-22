@@ -1,12 +1,12 @@
 # Diagramas da versão final
 
-Código-fonte em Mermaid e imagem exportada de cada diagrama da documentação final (Seção 6).
+Código-fonte em Mermaid e imagem exportada de cada diagrama da documentação final (Seções 5 e 6).
 
 | Arquivo | Diagrama | Figura |
 |---|---|---|
-| `fluxo.mmd` | Fluxo do processo, em três etapas: incidentes (DSS02), investigação (DSS03) e correção/validação/encerramento | Figura 1 |
-| `er.mmd` | Entidade-relacionamento, com `validado_por_id` (RF13) e CausaRaiz/ErroConhecido 1:1 | Figura 2 |
-| `casos.mmd` | Casos de uso dos quatro perfis, com RF13, RF18, RF25, RF26 e RF29 | Figura 3 |
+| `fluxo.mmd` | Fluxo do processo, em três etapas: incidentes (DSS02), investigação (DSS03) e correção/validação/encerramento | Figura 1 (Seção 5.1) |
+| `casos.mmd` | Casos de uso dos quatro perfis, com RF13, RF18, RF25, RF26 e RF29 | Figura 2 (Seção 5.3) |
+| `er.mmd` | Entidade-relacionamento, com `validado_por_id` (RF13) e CausaRaiz/ErroConhecido 1:1 | Figura 3 (Seção 6.3) |
 
 Mudanças em relação ao planejamento: o fluxo não tem mais o atalho que pulava "Erro conhecido" (o status avança um passo por vez), e a rejeição da solução pelo Responsável pelo sistema devolve o Problema para "Em investigação", como o sistema faz.
 

@@ -4,7 +4,7 @@ erDiagram
     USUARIO |o--o{ PROBLEMA : "investiga (responsável)"
     USUARIO |o--o{ PROBLEMA : "valida a solução"
     USUARIO ||--o{ ACAO_CORRETIVA : "executa"
-    USUARIO ||--o{ HISTORICO_STATUS : "altera"
+    USUARIO |o--o{ HISTORICO_STATUS : "altera"
     SISTEMA ||--o{ INCIDENTE : "é afetado por"
     SISTEMA ||--o{ PROBLEMA : "possui"
     PROBLEMA |o--o{ INCIDENTE : "agrupa"
@@ -46,7 +46,7 @@ erDiagram
         text solucao_contorno
         int problema_id FK }
     ACAO_CORRETIVA { int id PK
-        string descricao
+        text descricao
         date prazo
         string status
         int problema_id FK

@@ -18,7 +18,7 @@ flowchart TB
     subgraph R3["3. Correção, validação e encerramento"]
         direction LR
         K["<b>Em correção</b><br/>Ações Corretivas criadas"] --> L[Ações executadas:<br/>Aberta → Em andamento<br/>→ Concluída]
-        L --> M["<b>Resolvido</b><br/>todas as ações<br/>concluídas"]
+        L --> M["<b>Resolvido</b><br/>a validação exige todas<br/>as ações concluídas"]
         M --> N{Responsável pelo<br/>sistema valida?}
         N -- Sim --> O["<b>Encerrado</b><br/>Gestor de TI aprova"]
         N -- Não --> Q[Volta para<br/><b>Em investigação</b>]
