@@ -1,0 +1,28 @@
+flowchart TB
+    subgraph R1["1. Gestão de Incidentes (ITIL 4 · COBIT DSS02)"]
+        direction LR
+        A([Suporte registra<br/>o Incidente]) --> B{Existe Erro<br/>conhecido na KEDB?}
+        B -- Sim --> C[Aplica a solução<br/>de contorno]
+        B -- Não --> D[Restaura<br/>o serviço]
+        C --> E{Incidente<br/>recorrente?}
+        D --> E
+        E -- Não --> F([Incidente<br/>tratado])
+        E -- Sim --> X[Suporte abre o Problema<br/>e vincula os Incidentes]
+    end
+    subgraph R2["2. Investigação do Problema (ITIL 4 · COBIT DSS03)"]
+        direction LR
+        G["<b>Registrado</b><br/>Problema aberto"] --> H[Gestor de TI define<br/>prioridade e responsável]
+        H --> I["<b>Em investigação</b><br/>Desenvolvedor registra<br/>a CausaRaiz (5 Porquês)"]
+        I --> J["<b>Erro conhecido</b><br/>ErroConhecido com<br/>solução de contorno"]
+    end
+    subgraph R3["3. Correção, validação e encerramento"]
+        direction LR
+        K["<b>Em correção</b><br/>Ações Corretivas criadas"] --> L[Ações executadas:<br/>Aberta → Em andamento<br/>→ Concluída]
+        L --> M["<b>Resolvido</b><br/>todas as ações<br/>concluídas"]
+        M --> N{Responsável pelo<br/>sistema valida?}
+        N -- Sim --> O["<b>Encerrado</b><br/>Gestor de TI aprova"]
+        N -- Não --> Q[Volta para<br/><b>Em investigação</b>]
+        O --> P([Dashboard acompanha<br/>a reincidência])
+    end
+    R1 --> R2
+    R2 --> R3
