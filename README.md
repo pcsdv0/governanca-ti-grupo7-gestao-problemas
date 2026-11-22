@@ -163,6 +163,26 @@ $env:DEBUG = "True"
 - **RF25/RF26 — Indicadores.** Em `/dashboard/`, o gestor consulta incidentes e problemas por sistema, incidentes por problema e a distribuição pelo status do problema. Incidentes sem vínculo aparecem em separado. Problemas em aberto são os que ainda não chegaram a Resolvido ou Encerrado.
 - O tempo médio usa o intervalo entre registro e última resolução dos problemas atualmente resolvidos ou encerrados. A reincidência conta cada problema encerrado uma única vez quando há incidente vinculado com ocorrência posterior ao encerramento e até o momento da consulta. O percentual no prazo usa as ações concluídas com histórico de conclusão e compara o dia local em Recife ao prazo. Médias e percentuais sem amostra aparecem como “Sem dados”.
 
+## Dados de demonstração
+
+```bash
+python manage.py migrate
+python manage.py carregar_demo
+python manage.py runserver
+```
+
+O comando grava tudo pelos serviços do backend (mesmas regras, permissões e auditoria do uso real) e só carrega dados se o banco ainda não tiver Incidentes. No Render, ele roda no deploy quando `CARREGAR_DEMO=True`. Senha de todos os usuários: `demo1234`.
+
+| Login | Nome | Perfil |
+|---|---|---|
+| `suporte` / `suporte2` | Ana Lima / João Ferreira | Suporte |
+| `dev` / `dev2` | Carla Mendes / Rafael Souza | Desenvolvedor |
+| `gestor` | Marcos Oliveira | Gestor de TI |
+| `responsavel` | Patrícia Rocha | Responsável pelo sistema (Sistema de Matrícula e Portal do Aluno) |
+| `responsavel2` | Bruno Almeida | Responsável pelo sistema (E-mail institucional) |
+
+Cenário carregado: 3 Sistemas, 13 Incidentes e 3 Problemas. O Problema do Sistema de Matrícula está em correção, com 5 ocorrências, 3 ações e alerta de recorrência no dashboard. O do Portal do Aluno está em investigação. O do E-mail institucional percorreu o ciclo completo, com validação do Responsável pelo sistema (RF13) e encerramento pelo Gestor de TI. Há também 4 Incidentes sem Problema, para demonstrar a abertura. O passo a passo está em [docs/roteiro-demonstracao.md](docs/roteiro-demonstracao.md).
+
 ## Testes e lint
 
 ```bash
@@ -235,6 +255,7 @@ Responsáveis e backups em [docs/EQUIPE.md](docs/EQUIPE.md).
 - [docs/EQUIPE.md](docs/EQUIPE.md): funções, responsáveis e backups
 - [docs/escopo-backend-mvp.md](docs/escopo-backend-mvp.md): requisitos F2 do MVP e distinção da versão final
 - [docs/integracao-problemas-f3.md](docs/integracao-problemas-f3.md): contrato das views, formulários, contextos e ativação das telas
+- [docs/roteiro-demonstracao.md](docs/roteiro-demonstracao.md): roteiro da demonstração da versão final
 - [CONTRIBUTING.md](CONTRIBUTING.md): branches, commits e pull requests
 
 ## Situação registrada na entrega do MVP
