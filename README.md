@@ -21,7 +21,7 @@ Relação central: **um Problema se relaciona com vários Incidentes.**
 
 | Camada | Tecnologia |
 |---|---|
-| Linguagem | Python 3.12+ (esta entrega validada com 3.14.9) |
+| Linguagem | Python 3.13 no CI, no Docker e no Render (funciona a partir do 3.12) |
 | Framework | **Django 5.2.18 (LTS)** |
 | Interface | Templates Django, Bootstrap 5 (CDN), HTMX (opcional), Chart.js (dashboard) |
 | Banco | SQLite (desenvolvimento) / PostgreSQL (produção, via `DATABASE_URL` + dj-database-url) |

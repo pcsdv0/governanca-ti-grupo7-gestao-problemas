@@ -571,6 +571,16 @@ class BackendMvpTests(TestCase):
             404,
         )
 
+    def test_detalhe_mostra_contagem_de_ocorrencias(self):
+        """RF12: o detalhe exibe quantos Incidentes estão vinculados ao Problema."""
+        self.client.force_login(self.responsavel)
+        resposta = self.client.get(reverse("problemas:detalhe", args=[self.problema.pk]))
+        quantidade = self.problema.incidentes.count()
+        self.assertGreater(quantidade, 0)
+        self.assertEqual(resposta.context["problema"].quantidade_incidentes, quantidade)
+        self.assertContains(resposta, f'<span id="contagem-ocorrencias">{quantidade}</span>')
+        self.assertContains(resposta, f"Incidentes vinculados ({quantidade})")
+
     def test_encerramento_revalida_acao_criada_apos_validacao_do_formulario(self):
         self.resolver()
         self.concluir(self.acao())
