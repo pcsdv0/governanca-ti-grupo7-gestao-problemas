@@ -16,6 +16,28 @@ Definidos em `contas/models.py` (classe `Perfil`).
 | `GESTOR_TI` | Gestor de TI |
 | `RESPONSAVEL_SISTEMA` | Responsável pelo sistema |
 
+## Impacto do Incidente
+
+Definido em `incidentes/constantes.py` (classe `ImpactoIncidente`), conforme confirmação da F2 em 08/11/2026.
+
+| Código | Rótulo | Definição |
+|---|---|---|
+| `BAIXO` | Baixo | Efeito limitado, serviço principal disponível. |
+| `MEDIO` | Médio | Degradação relevante ou indisponibilidade parcial. |
+| `ALTO` | Alto | Serviço essencial indisponível ou operação amplamente afetada. |
+
+## Prioridade do Problema
+
+Confirmada pela F2 em 09/11/2026; classe `PrioridadeProblema` em `problemas/constantes.py`.
+
+| Código | Rótulo |
+|---|---|
+| `BAIXA` | Baixa |
+| `MEDIA` | Média |
+| `ALTA` | Alta |
+
+Na abertura, prioridade e responsável ficam sem atribuição. O Gestor de TI define ambos; o responsável pelo Problema deve possuir perfil Desenvolvedor.
+
 ## Status do Problema
 
 Definidos em `problemas/constantes.py` (classe `StatusProblema`).
@@ -38,6 +60,8 @@ Definidos em `acoes/constantes.py` (classe `StatusAcaoCorretiva`).
 | `ABERTA` | Aberta |
 | `EM_ANDAMENTO` | Em andamento |
 | `CONCLUIDA` | Concluída |
+
+A sequência confirmada pela F2 em 09/11/2026 é **Aberta → Em andamento → Concluída**, sem saltos ou retornos. O responsável pela ação é um Desenvolvedor; Desenvolvedor e Gestor criam, e qualquer Desenvolvedor atualiza o status, preservada a exceção de superusuário.
 
 ## Entidades
 
@@ -69,4 +93,4 @@ No código os nomes de classe não levam acento (`AcaoCorretiva`, `HistoricoStat
 
 ## Testes que protegem estes nomes
 
-Os testes `contas/tests.py`, `problemas/tests.py` e `acoes/tests.py` comparam as choices do código com as tabelas acima. Se alguém alterar um nome só no código, o CI falha.
+Os testes `contas/tests.py`, `incidentes/tests.py`, `problemas/tests.py` e `acoes/tests.py` comparam as choices do código com as tabelas acima. Se alguém alterar um nome só no código, o CI falha.

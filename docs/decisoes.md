@@ -20,8 +20,87 @@ Registro leve: uma linha por decisão, com data e motivo. Decisões novas entram
 | 17/10/2026 | Nomes das funções F2 a F6 deduzidos do plano de tarefas (a validar com o grupo) | Só a F1 foi definida formalmente. |
 | 17/10/2026 | Configuração do GitHub (repositório, labels, milestones, issues) feita pelo script `scripts/configurar_github.py` | Repetível e sem retrabalho manual; o script pula o que já existe e não apaga nada. |
 
+## Implementação F2 — 08/11/2026
+
+As regras abaixo foram confirmadas no escopo acadêmico informado para esta implementação; as escolhas de código estão identificadas como técnicas e não alteram os nomes padronizados.
+
+| Base | Aplicação | Motivo |
+|---|---|---|
+| RF04 confirmado | Cadastro, edição e listagem de Sistema com nome, descrição e responsável, restritos ao Gestor de TI | Entregar o módulo definido no planejamento |
+| Padrões existentes | Reutilizar `contas/permissoes.py`, exceção de superusuário e `HistoricalRecords()` com o middleware atual | Manter autorização e auditoria consistentes com a arquitetura |
+| Escolha técnica autorizada no escopo | Namespace `sistemas` e rotas `/sistemas/`, `/sistemas/novo/` e `/sistemas/<int:pk>/editar/` | Não havia convenção específica; usar as rotas propostas, com GET para páginas e POST para gravações |
+| Escolhas técnicas de persistência | Nome com até 200 caracteres; FK do responsável com `PROTECT` | Definir armazenamento textual e preservar referências; sem unicidade de nome ou fluxo de exclusão |
+| Limite inicial do escopo | Preparação de Incidentes inicialmente documental, antes da confirmação de impacto | A evolução funcional está registrada abaixo; vínculo com Problema continua dependente da F1 |
+
+## Confirmações da F2 — 08/11/2026
+
+| Decisão confirmada pelo responsável pela F2 | Aplicação |
+|---|---|
+| A data da ocorrência de Incidente inclui horário | Usar `DateTimeField` no modelo de Incidentes, respeitando o fuso e `USE_TZ` existentes. |
+| O responsável por Sistema deve possuir perfil `RESPONSAVEL_SISTEMA` | Restringir seleção e validação nos formulários da aplicação e do admin; gerar migration e testar a rejeição de outros perfis, inclusive em POST do superusuário. |
+
+### Evolução após as confirmações
+
+| Decisão confirmada pelo responsável pela F2 | Aplicação |
+|---|---|
+| Impacto com níveis Baixo, Médio e Alto e as definições propostas | Choices `BAIXO`, `MEDIO` e `ALTO` em `ImpactoIncidente`; definições em `convencoes.md` e no formulário; preenchimento obrigatório, sem valor padrão |
+| Suporte edita os próprios incidentes; Gestor de TI edita qualquer registro | Verificação no servidor para GET/POST; autor original imutável no formulário e auditoria de cada edição; exceção de superusuário preservada |
+| Filtro por duas datas opcionais, incluindo os dias inicial e final completos em America/Recife | Campos De/Até na listagem, combináveis com Sistema; intervalo invertido produz erro de validação |
+
+Com impacto e edição definidos, cadastro e consulta de Incidentes passam a ser funcionais. RF06 permanece parcial: o vínculo com Problema e seu filtro dependem da F1. Incidentes não é exposto no admin nesta etapa; o histórico é persistido por `HistoricalRecords` e consultável pelo ORM. Não houve ampliação para Problemas, causa raiz ou ações corretivas.
+
+Escolhas técnicas: título com até 200 caracteres, referências com `PROTECT` e rotas no namespace `incidentes` (`/incidentes/`, `/incidentes/novo/`, `/incidentes/<int:pk>/editar/`), seguindo o padrão de Sistemas.
+
 ## Pendências
 
+- [ ] Integrar a navegação dos módulos na página inicial com a F3, atendendo ao requisito da AV2 de acesso às telas principais em até três cliques.
+
+- [ ] Integrar as telas de Problemas com a F3 conforme `integracao-problemas-f3.md`.
+- [x] Integrar Ações Corretivas e sua validação de conclusão para o encerramento de Problemas (backend F2 do MVP).
 - [ ] Nome do sistema (hoje aparece como "Gestão de Problemas").
 - [ ] Formato da Entrega 1 exigido pela professora (documento, modelo, extensão).
 - [ ] Validar os nomes e responsáveis das funções F2 a F6 ([EQUIPE.md](EQUIPE.md)).
+
+## Ampliação de escopo e confirmações da F2 — 09/11/2026
+
+A solicitação de implementar o backend de Problemas nesta entrega substitui a estratégia anterior de aguardar uma implementação da F1. As telas permanecem com a F3. Esta autorização não redefine a divisão geral da equipe no planejamento acadêmico.
+
+| Decisão confirmada pelo responsável pela F2 | Aplicação prevista |
+|---|---|
+| Prioridades Baixa, Média e Alta; prioridade e responsável inicialmente sem atribuição | Abertura pelo Suporte e atribuição posterior de ambos pelo Gestor de TI (RF11) |
+| Vincular somente Incidentes do mesmo Sistema do Problema, sem vínculo com outro Problema | Preservar a relação opcional de um Incidente com no máximo um Problema |
+| Repetir o vínculo com o mesmo Problema não gera duplicação | Operação idempotente; transferência e desvinculação fora desta etapa |
+
+### Confirmações complementares e implementação
+
+| Decisão confirmada pelo responsável pela F2 | Aplicação |
+|---|---|
+| Somente usuários com perfil Desenvolvedor podem ser responsáveis por Problema | Seleção e validação no RF11, inclusive para superusuário |
+| Sequência Registrado → Em investigação → Erro conhecido → Em correção → Resolvido → Encerrado, sem saltos nem reabertura | Desenvolvedor e Gestor avançam até Resolvido; encerramento exclusivo do Gestor, respeitada a exceção de superusuário |
+| Encerramento pendente de integração com Ações Corretivas concluídas | Solicitação da última transição retorna erro de validação; não se presume conclusão de ações inexistentes |
+
+O backend de Problemas, HistóricoStatus, vínculo com Incidentes, filtro de vínculo, formulários e views foram implementados. O contrato está em [integracao-problemas-f3.md](integracao-problemas-f3.md). As telas permanecem com a F3.
+
+Escolhas técnicas: título com 200 caracteres; referências com `PROTECT`; prioridade vazia e responsável nulo representam ausência de atribuição; serviços usam transações e bloqueio de linhas no PostgreSQL. HistóricoStatus é derivado automaticamente da auditoria de Problema, incluindo a abertura. As rotas de Problemas aguardam os templates para serem montadas em `config/urls.py`. Não há escrita pelo admin nem operação genérica de edição de Problema.
+
+Os registros de 08/11 acima preservam o contexto histórico; a dependência anterior de aguardar a F1 foi substituída pela ampliação de escopo desta etapa.
+
+
+## Fechamento do backend F2 do MVP — 09/11/2026
+
+A F2 solicitou concluir o backend do MVP, preservando as telas com a F3. Conferência do planejamento ajustado da AV2, seções 4/4.1/5/6.2: RF15, RF17, RF20, RF21 e RF23/RF24 pertencem ao MVP. A classificação anterior do módulo KEDB inteiro como versão final estava incorreta: RF17 é MVP; RF18 (pesquisa) e RF29 (alerta de recorrência) são versão final. Ver [escopo-backend-mvp.md](escopo-backend-mvp.md).
+
+| Regra confirmada pelo responsável pela F2 | Implementação |
+|---|---|
+| Uma CausaRaiz e um ErroConhecido por Problema; qualquer Desenvolvedor cadastra/atualiza; sem exclusão | OneToOneField para Problema, formulários, serviços e views auditados |
+| Análise dos 5 Porquês em texto; salvar causa/erro não muda automaticamente o status de Problema | Campos textuais obrigatórios e transição de Problema mantida como operação separada |
+| Responsável da ação deve ser Desenvolvedor; prazo como data; status inicial Aberta | Validação em formulário e modelo; prazo sem restrições adicionais |
+| Desenvolvedor e Gestor criam ações; qualquer Desenvolvedor altera status por Aberta → Em andamento → Concluída | Autorização e transições validadas nos serviços; sem saltos, retorno ou edição dos outros campos |
+| Encerramento exige ao menos uma ação e todas Concluídas | Integração ao serviço de status de Problema, exclusiva do Gestor com exceção de superusuário |
+| Após Encerrado, nenhuma nova ação ou alteração do status das ações | Validação sob bloqueio do Problema na mesma transação da gravação/auditoria |
+
+Escolhas técnicas: referências com `PROTECT`; status e FK de Problema fora dos campos controlados pelos formulários; mesma ordem de bloqueio (Problema antes de AçãoCorretiva) para evitar disputa entre encerramento e alterações de ações no PostgreSQL. A unicidade de CausaRaiz/ErroConhecido é garantida no banco. A auditoria de ações usa django-simple-history, conforme seção 6.2, sem outro modelo HistóricoStatus.
+
+O detalhe do Problema reúne os dados e seus históricos em uma linha do tempo. As rotas continuam aguardando as telas da F3. A decisão anterior de bloquear todo encerramento enquanto faltava Ações Corretivas é substituída pela validação funcional acima. Não foram implementados pesquisa global na KEDB, alerta de recorrência, dashboard, reabertura ou validação final de encerramento.
+
+Migrations novas: `problemas/0002_causaraiz_historicalcausaraiz.py`, `acoes/0001_initial.py` e `kedb/0001_initial.py`. Dependências Python permanecem fixadas e inalteradas.

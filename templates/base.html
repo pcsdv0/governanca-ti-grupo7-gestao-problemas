@@ -1,67 +1,183 @@
-{% load static %}<!doctype html>
+
+{% load static %}
+<!doctype html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>{% block titulo %}Gestão de Problemas{% endblock %} | Grupo 7</title>
-  <!-- Bootstrap 5 via CDN (sem build de front-end) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+
   {% block head_extra %}{% endblock %}
 </head>
-<body class="d-flex flex-column min-vh-100">
-  {% if user.is_authenticated %}
-  <nav class="navbar navbar-expand-lg navbar-dark navbar-projeto">
-    <div class="container">
-      <a class="navbar-brand fw-semibold" href="{% url 'inicio' %}">
-        <i class="bi bi-diagram-3"></i> Gestão de Problemas
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Abrir menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="menu">
-        <ul class="navbar-nav me-auto">
-          {# TODO F3: links dos módulos (Incidentes, Problemas, KEDB, Dashboard) conforme o perfil #}
-          <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}">Início</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3 text-white">
-          <span>
-            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
-            <span class="badge text-bg-light ms-1">{{ user.get_perfil_display }}</span>
-          </span>
-          <form method="post" action="{% url 'contas:logout' %}" class="m-0">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-light">
-              <i class="bi bi-box-arrow-right"></i> Sair
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </nav>
-  {% endif %}
 
-  <main class="container py-4 flex-grow-1">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+<body class="min-vh-100">
+
+  <div class="layout-projeto">
+
+    {% if user.is_authenticated %}
+
+      <!-- Cabeçalho para dispositivos móveis -->
+      <header class="cabecalho-mobile d-lg-none">
+        <a href="{% url 'inicio' %}" class="text-white text-decoration-none fw-semibold">
+          <i class="bi bi-diagram-3 me-2"></i>
+          Gestão de Problemas
+        </a>
+
+        <button class="btn btn-outline-light btn-sm"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#barraLateral"
+                aria-controls="barraLateral"
+                aria-label="Abrir menu">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+      </header>
+
+      <!-- Barra lateral -->
+      <aside class="offcanvas-lg offcanvas-start barra-lateral"
+             tabindex="-1"
+             id="barraLateral"
+             aria-labelledby="tituloBarraLateral">
+
+        <div class="offcanvas-header border-bottom border-light border-opacity-25">
+          <h5 class="offcanvas-title text-white" id="tituloBarraLateral">
+            Gestão de Problemas
+          </h5>
+          <button type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="offcanvas"
+                  data-bs-target="#barraLateral"
+                  aria-label="Fechar menu">
+          </button>
         </div>
-      {% endfor %}
+
+        <div class="offcanvas-body">
+
+          <div class="marca-sistema d-none d-lg-block">
+            <a href="{% url 'inicio' %}"
+               class="text-white text-decoration-none">
+              <i class="bi bi-diagram-3 fs-3"></i>
+              <span class="fw-bold fs-5">Gestão de Problemas</span>
+            </a>
+            <p class="small mb-0 mt-2 text-white-50">
+              Governança de TI · Grupo 7
+            </p>
+          </div>
+
+          <nav class="menu-lateral" aria-label="Navegação principal">
+
+            <div class="menu-titulo">MENU PRINCIPAL</div>
+
+            <a href="{% url 'inicio' %}" class="menu-link">
+              <i class="bi bi-house-door"></i>
+              <span>Início</span>
+            </a>
+
+            <a href="{% url 'incidentes:listar' %}" class="menu-link">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>Incidentes</span>
+            </a>
+
+            <a href="{% url 'problemas:listar' %}" class="menu-link">
+              <i class="bi bi-clipboard-check"></i>
+              <span>Problemas</span>
+            </a>
+
+            {% if user.perfil == 'SUPORTE' or user.perfil == 'DESENVOLVEDOR' or user.is_superuser %}
+              <a href="{% url 'kedb:pesquisar' %}" class="menu-link">
+                <i class="bi bi-journal-text"></i>
+                <span>Erros conhecidos</span>
+              </a>
+            {% endif %}
+
+            {% if user.perfil == 'GESTOR_TI' or user.is_superuser %}
+              <div class="menu-titulo mt-4">GESTÃO E INDICADORES</div>
+
+              <a href="{% url 'dashboard:painel' %}" class="menu-link">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Dashboard</span>
+              </a>
+            {% endif %}
+
+          </nav>
+
+          <!-- Usuário e encerramento da sessão -->
+          <div class="usuario-lateral">
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <i class="bi bi-person-circle fs-3"></i>
+
+              <div class="overflow-hidden">
+                <div class="fw-semibold text-truncate">
+                  {{ user.get_full_name|default:user.username }}
+                </div>
+                <div class="small text-white-50">
+                  {{ user.get_perfil_display }}
+                </div>
+              </div>
+            </div>
+
+            <form method="post" action="{% url 'contas:logout' %}">
+              {% csrf_token %}
+
+              <button type="submit"
+                      class="btn btn-outline-light btn-sm w-100">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Sair
+              </button>
+            </form>
+
+          </div>
+
+        </div>
+      </aside>
+
     {% endif %}
 
-    {% block conteudo %}{% endblock %}
-  </main>
+    <!-- Área principal -->
+    <div class="area-principal">
 
-  <footer class="py-3 text-center text-body-secondary small border-top">
-    Grupo 7 · Governança de TI · UNINASSAU · ITIL 4 / COBIT 2019
-  </footer>
+      <main class="container-fluid px-3 px-md-4 py-4 flex-grow-1">
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show"
+                 role="alert">
+
+              {{ message }}
+
+              <button type="button"
+                      class="btn-close"
+                      data-bs-dismiss="alert"
+                      aria-label="Fechar"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        {% block conteudo %}{% endblock %}
+
+      </main>
+
+      <footer class="py-3 text-center text-body-secondary small border-top px-3">
+        Grupo 7 · Governança de TI · UNINASSAU · ITIL 4 / COBIT 2019
+      </footer>
+
+    </div>
+
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  {# Páginas que precisarem de Chart.js ou HTMX incluem os scripts neste bloco. #}
+
   {% block scripts %}{% endblock %}
+
 </body>
 </html>

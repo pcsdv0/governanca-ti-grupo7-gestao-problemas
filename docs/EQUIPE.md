@@ -3,15 +3,15 @@
 | Função | Papel | Responsável | Backup |
 |---|---|---|---|
 | F1 | Líder técnico e arquiteto | Paulo César ([@pcsdv0](https://github.com/pcsdv0)) | F2 |
-| F2 | Back-end e modelo de dados | A definir | F1 |
-| F3 | Front-end e interface | A definir | F1 |
-| F4 | Requisitos, funcionalidades e diagramas | A definir | F5 |
-| F5 | Governança de TI (ITIL 4 / COBIT 2019) e RACI | A definir | F4 |
-| F6 | Qualidade, testes e coordenação das entregas | A definir | F4 |
+| F2 | Back-end e modelo de dados | Douglas Lino Da Paz ([@DougPaz7](https://github.com/DougPaz7)) | F1 |
+| F3 | Front-end e interface | Bruno Vinicius Lira de Almeida ([@bruno0305](https://github.com/bruno0305)) | F1 |
+| F4 | Requisitos, funcionalidades e diagramas | Lucy Lopes Carvalho | F5 |
+| F5 | Governança de TI (ITIL 4 / COBIT 2019) e RACI | Thomas Eustáquio Pereira da Silva | F4 |
+| F6 | Qualidade, testes e coordenação das entregas | Carlos Wagner Farias da Fonseca ([@CW091007](https://github.com/CW091007)) | F4 |
 
 **Backups:** F1 ↔ F2, F3 → F1, F4 ↔ F5, F6 → F4. O backup assume a tarefa se o responsável ficar impedido e acompanha o trabalho para conseguir substituí-lo.
 
-> Os papéis de F2 a F6 foram resumidos a partir do plano de tarefas; o grupo deve confirmá-los.
+> Funções confirmadas pelo grupo e usadas nas Entregas 1, 2 e 3.
 
 ## Responsabilidades por função
 

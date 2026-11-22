@@ -1,37 +1,255 @@
+
 {% extends "base.html" %}
 
 {% block titulo %}Início{% endblock %}
 
 {% block conteudo %}
-<h1 class="h3">Olá, {{ user.get_full_name|default:user.username }}</h1>
-<p class="text-body-secondary">Você entrou com o perfil <strong>{{ user.get_perfil_display }}</strong>.</p>
 
-<div class="alert alert-info">
-  <i class="bi bi-cone-striped"></i>
-  Esta é a versão esqueleto do sistema. Os módulos abaixo serão implementados nas próximas entregas.
+<!-- Boas-vindas -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="	card-body p-3">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-9">
+        <span class="badge text-bg-primary mb-3">
+          Governança de TI · Grupo 7
+        </span>
+
+        <h1 class="h3 fw-bold mb-2">
+          Bem-vindo ao sistema!
+        </h1>
+
+        <p class="fs-5 text-body-secondary mb-3">
+          Olá,
+          <strong>{{ user.get_full_name|default:user.username }}</strong>.
+        </p>
+
+        <p class="text-body-secondary mb-0">
+          Gerencie incidentes, acompanhe problemas recorrentes
+          e contribua para a melhoria contínua dos serviços de TI.
+        </p>
+      </div>
+
+      <div class="col-lg-3 text-lg-end">
+        <div class="d-inline-flex align-items-center gap-2
+                    bg-light border rounded-3 px-3 py-2">
+          <i class="bi bi-person-badge text-primary fs-4"></i>
+          <div class="text-start">
+            <div class="small text-body-secondary">Seu perfil</div>
+            <strong>{{ user.get_perfil_display }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-{# TODO F3: substituir pelos atalhos reais de cada módulo, filtrados pelo perfil. #}
-<div class="row row-cols-1 row-cols-md-3 g-3">
-  <div class="col"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-exclamation-triangle"></i> Incidentes</h2>
-    <p class="small text-body-secondary mb-0">Restaurar o serviço rápido, com solução de contorno. (Entrega 2)</p>
-  </div></div></div>
-  <div class="col"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-search"></i> Problemas</h2>
-    <p class="small text-body-secondary mb-0">Investigar a causa raiz e corrigir de forma definitiva. (Entrega 2)</p>
-  </div></div></div>
-  <div class="col"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-list-check"></i> Ações corretivas</h2>
-    <p class="small text-body-secondary mb-0">Acompanhar as correções até o encerramento. (Entrega 2)</p>
-  </div></div></div>
-  <div class="col"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-journal-bookmark"></i> Erros conhecidos (KEDB)</h2>
-    <p class="small text-body-secondary mb-0">Causa e solução de contorno documentadas. (Entrega 3)</p>
-  </div></div></div>
-  <div class="col"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-bar-chart"></i> Dashboard</h2>
-    <p class="small text-body-secondary mb-0">Indicadores para gestores. (Entrega 3)</p>
-  </div></div></div>
+<!-- Funcionalidades -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h2 class="h4 fw-bold mb-1">Acesso rápido</h2>
+    <p class="text-body-secondary mb-0">
+      Selecione uma funcionalidade para começar.
+    </p>
+  </div>
 </div>
+
+<div class="row g-2">
+
+  <!-- Incidentes -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-3 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-primary-subtle text-primary rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-exclamation-triangle fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Incidentes</h3>
+
+        <p class="text-body-secondary">
+          Consulte os incidentes registrados e acompanhe as
+          ocorrências dos sistemas.
+        </p>
+
+        <a href="{% url 'incidentes:listar' %}"
+           class="btn btn-outline-primary mt-auto">
+          Consultar incidentes
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problemas -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-warning-subtle text-warning-emphasis rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-clipboard-check fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Gestão de problemas</h3>
+
+        <p class="text-body-secondary">
+          Acompanhe problemas identificados e suas ações corretivas.
+        </p>
+
+        <a href="{% url 'problemas:listar' %}"
+           class="btn btn-outline-primary mt-auto">
+          Consultar problemas
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Erros conhecidos -->
+  {% if user.is_superuser or user.perfil == 'SUPORTE' or user.perfil == 'DESENVOLVEDOR' %}
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-info-subtle text-info-emphasis rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-journal-text fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Erros conhecidos</h3>
+
+        <p class="text-body-secondary">
+          Pesquise soluções documentadas na base de conhecimento
+          de erros conhecidos (KEDB).
+        </p>
+
+        <a href="{% url 'kedb:pesquisar' %}"
+           class="btn btn-outline-primary mt-auto">
+          Pesquisar erros
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Funcionalidades do Gestor de TI -->
+  {% if user.is_superuser or user.perfil == 'GESTOR_TI' %}
+
+  <!-- Dashboard -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-success-subtle text-success rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-bar-chart-line fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Dashboard</h3>
+
+        <p class="text-body-secondary">
+          Visualize gráficos, indicadores de desempenho
+          e alertas de recorrência.
+        </p>
+
+        <a href="{% url 'dashboard:painel' %}"
+           class="btn btn-outline-primary mt-auto">
+          Acessar Dashboard
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usuários -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-primary-subtle text-primary rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-people fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Gerenciar usuários</h3>
+
+        <p class="text-body-secondary">
+          Consulte e administre os usuários e os perfis
+          de acesso ao sistema.
+        </p>
+
+        <a href="{% url 'contas:usuarios' %}"
+           class="btn btn-outline-primary mt-auto">
+          Gerenciar usuários
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sistemas -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="mb-3">
+          <span class="d-inline-flex align-items-center justify-content-center
+                       bg-secondary-subtle text-secondary rounded-3"
+                style="width: 52px; height: 52px;">
+            <i class="bi bi-hdd-network fs-4"></i>
+          </span>
+        </div>
+
+        <h3 class="h5 fw-bold">Gerenciar sistemas</h3>
+
+        <p class="text-body-secondary">
+          Consulte os sistemas cadastrados e acompanhe
+          os serviços de TI monitorados.
+        </p>
+
+        <a href="{% url 'sistemas:listar' %}"
+           class="btn btn-outline-primary mt-auto">
+          Gerenciar sistemas
+          <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div>
+
+<!-- Informações do projeto -->
+<div class="card border-0 shadow-sm mt-2">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-start gap-3">
+      <i class="bi bi-info-circle text-primary fs-4"></i>
+
+      <div>
+        <h3 class="h6 fw-bold mb-1">
+          Sobre o projeto
+        </h3>
+
+        <p class="text-body-secondary mb-0">
+          Sistema acadêmico de Gestão de Problemas em TI,
+          desenvolvido pelo Grupo 7 da UNINASSAU,
+          com conceitos de ITIL 4 e COBIT 2019.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

@@ -2,3 +2,128 @@
 .navbar-projeto {
   background-color: #1f3a5f;
 }
+
+/* Layout principal */
+.layout-projeto {
+  min-height: 100vh;
+}
+
+.area-principal {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f7fb;
+}
+
+/* Barra lateral */
+.barra-lateral {
+  background-color: #1f3a5f;
+  color: #fff;
+  width: 270px !important;
+}
+
+.barra-lateral .offcanvas-body {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+}
+
+.marca-sistema {
+  padding: 8px 12px 28px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.marca-sistema a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Links de navegação */
+.menu-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.menu-titulo {
+  padding: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #aabbd0;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #e5edf7;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.menu-link i {
+  font-size: 18px;
+}
+
+.menu-link:hover,
+.menu-link:focus-visible {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+/* Usuário conectado */
+.usuario-lateral {
+  margin-top: auto;
+  padding: 20px 12px 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Cabeçalho mobile */
+.cabecalho-mobile {
+  background-color: #1f3a5f;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Computadores */
+@media (min-width: 992px) {
+  .layout-projeto:has(.barra-lateral) {
+    display: flex;
+  }
+
+  .offcanvas-lg.barra-lateral {
+    background-color: #1f3a5f !important;
+    width: 270px !important;
+    flex-grow: 0;
+  }
+
+  .barra-lateral {
+    position: sticky !important;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+
+  .area-principal {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Celulares e tablets */
+@media (max-width: 991.98px) {
+  .barra-lateral {
+    max-width: 85vw;
+  }
+
+  .area-principal {
+    min-height: calc(100vh - 60px);
+  }
+}

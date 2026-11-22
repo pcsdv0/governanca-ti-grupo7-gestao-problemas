@@ -7,6 +7,12 @@ Fonte da verdade: docs/convencoes.md. Não altere nomes sem atualizar o document
 from django.db import models
 
 
+class PrioridadeProblema(models.TextChoices):
+    BAIXA = "BAIXA", "Baixa"
+    MEDIA = "MEDIA", "Média"
+    ALTA = "ALTA", "Alta"
+
+
 class StatusProblema(models.TextChoices):
     REGISTRADO = "REGISTRADO", "Registrado"
     EM_INVESTIGACAO = "EM_INVESTIGACAO", "Em investigação"

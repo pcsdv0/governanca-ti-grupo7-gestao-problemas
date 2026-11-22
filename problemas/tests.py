@@ -1,5 +1,5 @@
-# TODO Funções 1 e 2 (F1/F2): modelos Problema, CausaRaiz e HistóricoStatus;
-# ciclo de status (choices em problemas/constantes.py).
+# Choices do ciclo de status. Testes do backend e do fluxo integrado do MVP:
+# test_backend.py e test_mvp.py.
 # Nomes padronizados: docs/convencoes.md. Modelo de dados: docs/modelo-de-dados.md.
 
 from django.test import SimpleTestCase

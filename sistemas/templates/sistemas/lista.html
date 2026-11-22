@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block titulo %}Sistemas{% endblock %}
+
+{% block conteudo %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Sistemas</h1>
+  <a class="btn btn-primary" href="{% url 'sistemas:cadastrar' %}">Cadastrar Sistema</a>
+</div>
+{% if sistemas %}
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">Nome</th>
+        <th scope="col">Descrição</th>
+        <th scope="col">Responsável pelo sistema</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sistema in sistemas %}
+      <tr>
+        <td>{{ sistema.nome }}</td>
+        <td>{{ sistema.descricao|linebreaksbr }}</td>
+        <td>{{ sistema.responsavel }}</td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'sistemas:editar' sistema.pk %}"
+             aria-label="Editar {{ sistema.nome }}">Editar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-body-secondary">Nenhum sistema cadastrado.</p>
+{% endif %}
+{% endblock %}
