@@ -15,8 +15,8 @@
 
 ## Responsabilidades por função
 
-- **F1 - Líder técnico e arquiteto:** stack, repositório, arquitetura, login e perfis, módulo de Problemas e ciclo de status, histórico/auditoria, indicadores, aprovação de encerramento, deploy.
-- **F2 - Back-end e modelo de dados:** modelo de dados, Incidentes, vínculo incidente-problema, causa raiz (5 Porquês), ações corretivas, KEDB, alerta de recorrência.
+- **F1 - Líder técnico e arquiteto:** stack, repositório, arquitetura, login e perfis, controle de acesso, integração contínua, revisão e integração do código, dados de demonstração, documentação técnica e deploy.
+- **F2 - Back-end e modelo de dados:** modelo de dados, Incidentes, Problemas e ciclo de status, vínculo incidente-problema, causa raiz (5 Porquês), ações corretivas, KEDB, histórico/auditoria, validação da solução, indicadores, alerta de recorrência e gestão de usuários.
 - **F3 - Front-end e interface:** protótipo das telas, telas base e navegação por perfil, integração das telas às views, dashboard, refinamentos de interface, vídeo de reserva (com a F1).
 - **F4 - Requisitos e documentação:** descrição do problema, público-alvo e perfis, funcionalidades por módulo (MVP), diagramas em Mermaid, fechamento da documentação.
 - **F5 - Governança:** conceitos de governança e tabela conceito → funcionalidade, matriz RACI, "conceitos aplicados", referências.
