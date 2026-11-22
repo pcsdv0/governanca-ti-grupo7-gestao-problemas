@@ -1,0 +1,59 @@
+erDiagram
+    USUARIO ||--o{ SISTEMA : "é responsável por"
+    USUARIO ||--o{ INCIDENTE : "registra"
+    USUARIO |o--o{ PROBLEMA : "investiga (responsável)"
+    USUARIO |o--o{ PROBLEMA : "valida a solução"
+    USUARIO ||--o{ ACAO_CORRETIVA : "executa"
+    USUARIO ||--o{ HISTORICO_STATUS : "altera"
+    SISTEMA ||--o{ INCIDENTE : "é afetado por"
+    SISTEMA ||--o{ PROBLEMA : "possui"
+    PROBLEMA |o--o{ INCIDENTE : "agrupa"
+    PROBLEMA ||--o| CAUSA_RAIZ : "tem"
+    PROBLEMA ||--o| ERRO_CONHECIDO : "gera"
+    PROBLEMA ||--o{ ACAO_CORRETIVA : "tem"
+    PROBLEMA ||--o{ HISTORICO_STATUS : "registra"
+    USUARIO { int id PK
+        string nome
+        string email
+        string perfil }
+    SISTEMA { int id PK
+        string nome
+        text descricao
+        int responsavel_id FK }
+    INCIDENTE { int id PK
+        string titulo
+        text descricao
+        datetime data_ocorrencia
+        string impacto
+        int sistema_id FK
+        int problema_id FK
+        int registrado_por_id FK }
+    PROBLEMA { int id PK
+        string titulo
+        text descricao
+        string status
+        string prioridade
+        int sistema_id FK
+        int responsavel_id FK
+        int validado_por_id FK }
+    CAUSA_RAIZ { int id PK
+        text descricao
+        text analise_5_porques
+        int problema_id FK }
+    ERRO_CONHECIDO { int id PK
+        text sintoma
+        text causa
+        text solucao_contorno
+        int problema_id FK }
+    ACAO_CORRETIVA { int id PK
+        string descricao
+        date prazo
+        string status
+        int problema_id FK
+        int responsavel_id FK }
+    HISTORICO_STATUS { int id PK
+        string status_anterior
+        string status_novo
+        datetime data_alteracao
+        int problema_id FK
+        int usuario_id FK }

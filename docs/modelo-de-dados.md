@@ -9,10 +9,10 @@ Os nomes seguem [convencoes.md](convencoes.md). Este documento separa o que est�
 | Usuário | Pessoa que usa o sistema, com um dos 4 perfis | Implementado (`contas.Usuario`) |
 | Sistema | Sistema ou serviço de TI afetado pelos incidentes | Implementado (`sistemas.Sistema`, RF04) |
 | Incidente | Interrupção ou degradação de um serviço | Cadastro, edição, consulta, auditoria, FK opcional para Problema e filtro por vínculo implementados |
-| Problema | Causa raiz desconhecida de um ou mais incidentes | Backend implementado nesta etapa pela F2; telas pendentes da F3 |
-| CausaRaiz | Resultado da investigação (5 Porquês) de um Problema | Backend implementado (RF15); telas com F3 |
-| ErroConhecido | Registro na KEDB: causa conhecida e solução de contorno documentada | Cadastro/atualização implementados (RF17, MVP); pesquisa RF18 na versão final |
-| AçãoCorretiva | Ação para eliminar a causa raiz, com responsável, prazo e status | Backend implementado (RF20/RF21); telas com F3 |
+| Problema | Causa raiz desconhecida de um ou mais incidentes | Implementado, com telas, validação da solução (RF13) e indicadores |
+| CausaRaiz | Resultado da investigação (5 Porquês) de um Problema | Implementado (RF15), 1:1 com Problema |
+| ErroConhecido | Registro na KEDB: causa conhecida e solução de contorno documentada | Implementado: cadastro/atualização (RF17) e pesquisa (RF18), 1:1 com Problema |
+| AçãoCorretiva | Ação para eliminar a causa raiz, com responsável, prazo e status | Implementado (RF20/RF21) |
 | HistóricoStatus | Registro de cada mudança de status do Problema (quem, o quê, quando) | Implementado para Problema, incluindo evento inicial |
 
 ## Sistema — implementado (RF04)
@@ -114,6 +114,7 @@ A inspeção de 08/11/2026 encontrou apenas placeholders de Problema nas referê
 | `prioridade` | `CharField(max_length=5, choices=PrioridadeProblema.choices, blank=True)` | Vazia na abertura; `BAIXA`, `MEDIA`, `ALTA` na atribuição |
 | `sistema` | FK para Sistema, `PROTECT`, `editable=False` | Derivado dos Incidentes de abertura; acesso reverso `sistema.problemas` |
 | `responsavel` | FK para usuário, `PROTECT`, `null=True`, `blank=True` | Não atribuído na abertura; deve ser Desenvolvedor; reverso `usuario.problemas_responsaveis` |
+| `validado_por` | FK para usuário, `PROTECT`, `null=True`, `editable=False` (migração `0003_validacao_solucao`) | RF13: preenchido quando o Responsável pelo sistema valida a solução de um Problema Resolvido; exigido pelo Gestor de TI para encerrar; limpo na rejeição, que devolve o Problema para Em investigação |
 | `history` | `HistoricalRecords()` | Snapshots de valores, data e autor |
 
 Suporte abre um Problema a partir de pelo menos um Incidente sem vínculo, todos do mesmo Sistema, e pode vincular outros. A operação é transacional: uma seleção inválida ou falha de persistência não deixa Problema, vínculo ou histórico parcialmente gravado. Repetir o vínculo com o mesmo Problema não duplica ocorrências.
@@ -126,7 +127,7 @@ Não foi definida restrição de transição apenas ao Desenvolvedor atribuído 
 
 Suporte, Desenvolvedor e Gestor consultam todos; Responsável pelo sistema consulta somente Problemas dos seus sistemas. O queryset autorizado anota `quantidade_incidentes`. O detalhe inclui incidentes, eventos de status e snapshots de Problema. Fora do escopo do responsável, retorna 404. Superusuário conserva a exceção de perfil.
 
-Formulários, views e URLs estão implementados; o include público aguarda templates da F3. As operações e o contrato de contextos estão em [integracao-problemas-f3.md](integracao-problemas-f3.md). Problemas não está registrado no admin, evitando um caminho alternativo de escrita sem as regras dos serviços.
+Formulários, views, URLs e templates estão implementados e publicados em `config/urls.py`. As operações e o contrato de contextos estão em [integracao-problemas-f3.md](integracao-problemas-f3.md). Problemas não está registrado no admin, evitando um caminho alternativo de escrita sem as regras dos serviços.
 
 ## HistóricoStatus — implementado para Problemas
 

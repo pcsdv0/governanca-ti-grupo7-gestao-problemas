@@ -1,0 +1,44 @@
+flowchart LR
+    S((Suporte))
+    D((Desenvolvedor))
+    subgraph SIS[Sistema de Gestão de Problemas]
+        direction LR
+        subgraph OP[Operação]
+            direction TB
+            UC1([Registrar e listar Incidentes · RF05, RF06])
+            UC2([Abrir Problema e vincular Incidentes · RF07, RF09])
+            UC3([Pesquisar Erros conhecidos · RF18])
+            UC5([Registrar CausaRaiz · RF15])
+            UC6([Registrar ErroConhecido · RF17])
+            UC7([Criar e atualizar Ações Corretivas · RF20, RF21])
+            UC8([Alterar status do Problema · RF10])
+        end
+        subgraph GE[Gestão e controle]
+            direction TB
+            UC12([Consultar detalhe e histórico · RF12, RF24])
+            UC4([Priorizar e atribuir responsável · RF11])
+            UC9([Validar solução · RF13])
+            UC10([Encerrar Problema · RF13])
+            UC11([Dashboard, indicadores e alertas · RF25, RF26, RF29])
+            UC13([Cadastrar Usuários e Sistemas · RF02, RF04])
+        end
+    end
+    G((Gestor de TI))
+    R((Responsável<br/>pelo sistema))
+    S --- UC1
+    S --- UC2
+    S --- UC3
+    D --- UC3
+    D --- UC5
+    D --- UC6
+    D --- UC7
+    D --- UC8
+    UC4 --- G
+    UC7 --- G
+    UC8 --- G
+    UC10 --- G
+    UC11 --- G
+    UC13 --- G
+    UC9 --- R
+    UC12 --- R
+    UC12 --- G
