@@ -1,24 +1,361 @@
+
 {% extends "base.html" %}
-{% block titulo %}Indicadores{% endblock %}
+
+{% block titulo %}Dashboard de Governança{% endblock %}
+
 {% block conteudo %}
-<h1>Indicadores de gestão de problemas</h1>
-<dl>
-  <dt>Problemas em aberto</dt><dd>{{ problemas_abertos }}</dd>
-  <dt>Tempo médio do registro à resolução mais recente (horas)</dt><dd>{{ tempo_medio_horas|floatformat:2|default:"Sem dados" }}</dd>
-  <dt>Ações concluídas no prazo (%)</dt><dd>{{ percentual_acoes_no_prazo|floatformat:2|default:"Sem dados" }}</dd>
-  <dt>Problemas com novo incidente após o encerramento</dt><dd>{{ problemas_reincidentes }}</dd>
-</dl>
-<h2>Alertas de recorrência nos últimos 30 dias</h2>
-<ul>{% for alerta in alertas %}<li>{{ alerta.sistema }} · {{ alerta.tipo }} {{ alerta.chave }} · {{ alerta.quantidade }} incidentes</li>
-{% empty %}<li>Nenhum grupo atingiu três ocorrências.</li>{% endfor %}</ul>
-<h2>Incidentes e problemas por sistema</h2>
-<table class="table"><thead><tr><th>Sistema</th><th>Incidentes</th><th>Incidentes recorrentes em 30 dias</th><th>Problemas</th></tr></thead>
-<tbody>{% for s in por_sistema %}<tr><th>{{ s.nome }}</th><td>{{ s.total_incidentes }}</td><td>{{ s.incidentes_recorrentes }}</td><td>{{ s.total_problemas }}</td></tr>{% endfor %}</tbody></table>
-<h2>Distribuição por status do problema</h2>
-<table class="table"><thead><tr><th>Status</th><th>Problemas</th><th>Incidentes vinculados</th></tr></thead>
-<tbody>{% for linha in por_status %}<tr><th>{{ linha.nome }}</th><td>{{ linha.problemas }}</td><td>{{ linha.incidentes }}</td></tr>{% endfor %}</tbody></table>
-<p>Incidentes sem problema vinculado: {{ incidentes_sem_problema }}</p>
-<h2>Incidentes por problema</h2>
-<ul>{% for p in por_problema %}<li><a href="{% url 'problemas:detalhe' p.pk %}">{{ p.titulo }}</a> · {{ p.incidentes_vinculados }}</li>
-{% empty %}<li>Nenhum problema registrado.</li>{% endfor %}</ul>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="fw-bold mb-1">Dashboard de Governança</h1>
+    <p class="text-body-secondary mb-0">
+      Indicadores de gestão de problemas e acompanhamento dos sistemas.
+    </p>
+  </div>
+  <span class="badge text-bg-primary px-3 py-2">
+    <i class="bi bi-bar-chart-line me-1"></i>
+    Indicadores ITIL 4 / COBIT 2019
+  </span>
+</div>
+
+<!-- Indicadores principais -->
+<div class="row g-3 mb-4">
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-body-secondary small">Problemas em aberto</span>
+          <i class="bi bi-exclamation-circle fs-4 text-primary"></i>
+        </div>
+        <h2 class="fw-bold mt-3 mb-1">{{ problemas_abertos }}</h2>
+        <span class="small text-body-secondary">Aguardando resolução</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-body-secondary small">Tempo médio de resolução</span>
+          <i class="bi bi-clock-history fs-4 text-info"></i>
+        </div>
+        <h2 class="fw-bold mt-3 mb-1">
+          {% if tempo_medio_horas is not None %}
+            {{ tempo_medio_horas|floatformat:1 }} h
+          {% else %}
+             Sem dados
+          {% endif %}
+        </h2>
+        <span class="small text-body-secondary">Do registro à resolução</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-body-secondary small">Ações concluídas no prazo</span>
+          <i class="bi bi-check-circle fs-4 text-success"></i>
+        </div>
+        <h2 class="fw-bold mt-3 mb-1">
+          {% if percentual_acoes_no_prazo is not None %}
+            {{ percentual_acoes_no_prazo|floatformat:1 }}%
+          {% else %}
+             Sem dados
+          {% endif %}
+        </h2>
+        <span class="small text-body-secondary">Cumprimento dos prazos</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-body-secondary small">Problemas reincidentes</span>
+          <i class="bi bi-arrow-repeat fs-4 text-danger"></i>
+        </div>
+        <h2 class="fw-bold mt-3 mb-1">{{ problemas_reincidentes }}</h2>
+        <span class="small text-body-secondary">
+          Novo incidente após encerramento
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Gráficos -->
+<div class="row g-4 mb-4">
+
+  <div class="col-12 col-xl-6">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-1">Problemas por status</h5>
+        <p class="text-body-secondary small mb-3">
+          Distribuição dos problemas registrados.
+        </p>
+        <div style="position: relative; height: 320px;">
+          <canvas id="graficoStatus"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-1">Incidentes e problemas por sistema</h5>
+        <p class="text-body-secondary small mb-3">
+          Comparação dos registros entre os sistemas.
+        </p>
+        <div style="position: relative; height: 320px;">
+          <canvas id="graficoSistemas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Alertas de recorrência -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-transparent py-3">
+    <h5 class="fw-semibold mb-0">
+      <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+      Alertas de recorrência
+    </h5>
+    <span class="small text-body-secondary">Últimos 30 dias</span>
+  </div>
+
+  <div class="card-body">
+    {% if alertas %}
+      <div class="list-group list-group-flush">
+        {% for alerta in alertas %}
+          <div class="list-group-item px-0">
+            <div class="d-flex flex-wrap justify-content-between gap-2">
+              <div>
+                <strong>{{ alerta.sistema }}</strong>
+                <p class="text-body-secondary small mb-0">
+                  {{ alerta.tipo }}: {{ alerta.chave }}
+                </p>
+              </div>
+              <span class="badge text-bg-warning align-self-center">
+                {{ alerta.quantidade }} incidentes
+              </span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-3">
+        <i class="bi bi-check-circle text-success fs-2"></i>
+        <p class="text-body-secondary mb-0 mt-2">
+          Nenhum grupo atingiu três ocorrências nos últimos 30 dias.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Dados detalhados -->
+<div class="row g-4">
+
+  <div class="col-12 col-xl-6">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3">Indicadores por sistema</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Sistema</th>
+                <th>Incidentes</th>
+                <th>Recorrentes</th>
+                <th>Problemas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sistema in por_sistema %}
+                <tr>
+                  <td>{{ sistema.nome }}</td>
+                  <td>{{ sistema.total_incidentes }}</td>
+                  <td>{{ sistema.incidentes_recorrentes }}</td>
+                  <td>{{ sistema.total_problemas }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center text-body-secondary">
+                    Nenhum sistema cadastrado.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-semibold mb-3">Problemas e incidentes vinculados</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Problema</th>
+                <th>Incidentes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for problema in por_problema %}
+                <tr>
+                  <td>
+                    <a href="{% url 'problemas:detalhe' problema.pk %}"
+                       class="text-decoration-none">
+                      {{ problema.titulo }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge text-bg-secondary">
+                      {{ problema.incidentes_vinculados }}
+                    </span>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="2" class="text-center text-body-secondary">
+                    Nenhum problema registrado.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="text-body-secondary small mt-3 mb-0">
+  Incidentes sem problema vinculado: {{ incidentes_sem_problema }}
+</p>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof Chart === "undefined") {
+    console.error("Chart.js não foi carregado.");
+    return;
+  }
+
+  const statusLabels = [
+    {% for linha in por_status %}
+      "{{ linha.nome|escapejs }}",
+    {% endfor %}
+  ];
+
+  const statusProblemas = [
+    {% for linha in por_status %}
+      {{ linha.problemas|default:0 }},
+    {% endfor %}
+  ];
+
+  const sistemasLabels = [
+    {% for sistema in por_sistema %}
+      "{{ sistema.nome|escapejs }}",
+    {% endfor %}
+  ];
+
+  const sistemasIncidentes = [
+    {% for sistema in por_sistema %}
+      {{ sistema.total_incidentes|default:0 }},
+    {% endfor %}
+  ];
+
+  const sistemasProblemas = [
+    {% for sistema in por_sistema %}
+      {{ sistema.total_problemas|default:0 }},
+    {% endfor %}
+  ];
+
+  const elementoStatus = document.getElementById("graficoStatus");
+
+  if (elementoStatus) {
+    new Chart(elementoStatus, {
+      type: "bar",
+      data: {
+        labels: statusLabels,
+        datasets: [{
+          label: "Problemas",
+          data: statusProblemas,
+          backgroundColor: "#2563eb",
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    });
+  }
+
+  const elementoSistemas = document.getElementById("graficoSistemas");
+
+  if (elementoSistemas) {
+    new Chart(elementoSistemas, {
+      type: "bar",
+      data: {
+        labels: sistemasLabels,
+        datasets: [
+          {
+            label: "Incidentes",
+            data: sistemasIncidentes,
+            backgroundColor: "#0d9488",
+            borderRadius: 5
+          },
+          {
+            label: "Problemas",
+            data: sistemasProblemas,
+            backgroundColor: "#f59e0b",
+            borderRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom" }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
 {% endblock %}
