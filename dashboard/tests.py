@@ -57,6 +57,10 @@ class PainelTests(TestCase):
         self.incidente("timeout", self.agora, self.outro)
         dados = indicadores(usuario=self.gestor, agora=self.agora)
         self.assertEqual(sorted(a["quantidade"] for a in dados["alertas"]), [3, 3])
+        # Rótulos legíveis: título do Problema ou título comum dos Incidentes
+        rotulos = {a["tipo"]: a["descricao"] for a in dados["alertas"]}
+        self.assertEqual(rotulos["Problema"], problema.titulo)
+        self.assertEqual(rotulos["Título"], "timeout")
         por_sistema = {s.pk: s for s in dados["por_sistema"]}
         self.assertEqual(por_sistema[self.sistema.pk].incidentes_recorrentes, 4)
         self.assertEqual(por_sistema[self.outro.pk].incidentes_recorrentes, 0)

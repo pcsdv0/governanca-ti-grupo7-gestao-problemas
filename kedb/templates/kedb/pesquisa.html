@@ -1,19 +1,42 @@
 {% extends "base.html" %}
 {% block titulo %}Erros conhecidos{% endblock %}
 {% block conteudo %}
-<h1>Base de erros conhecidos</h1>
-<form method="get">
-  <label for="q">Palavra-chave no sintoma, causa ou solução de contorno</label>
-  <input id="q" name="q" type="search" value="{{ q }}">
-  <button type="submit">Pesquisar</button>
+<div class="mb-4">
+  <h1 class="h3 fw-bold mb-1">Base de erros conhecidos</h1>
+  <p class="text-body-secondary mb-0">Consulte a solução de contorno antes de tratar um Incidente repetido (RF18).</p>
+</div>
+
+<form method="get" class="card card-body shadow-sm mb-4">
+  <label for="q" class="form-label fw-semibold">Palavra-chave no sintoma, causa ou solução de contorno</label>
+  <div class="input-group">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input id="q" name="q" type="search" value="{{ q }}" class="form-control" placeholder="Ex.: conexões, timeout, cota">
+    <button type="submit" class="btn btn-primary">Pesquisar</button>
+  </div>
 </form>
+
 {% for erro in pagina %}
-<article class="card card-body my-3">
-  <h2 class="h5"><a href="{% url 'problemas:detalhe' erro.problema_id %}">{{ erro.problema }}</a> · {{ erro.problema.sistema }}</h2>
-  <dl><dt>Sintoma</dt><dd>{{ erro.sintoma }}</dd><dt>Causa</dt><dd>{{ erro.causa }}</dd>
-  <dt>Solução de contorno</dt><dd>{{ erro.solucao_contorno }}</dd></dl>
+<article class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h2 class="h5 mb-3">
+      <a href="{% url 'problemas:detalhe' erro.problema_id %}" class="text-decoration-none">{{ erro.problema }}</a>
+      <span class="badge text-bg-light border ms-1">{{ erro.problema.sistema }}</span>
+    </h2>
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Sintoma</dt><dd class="col-sm-9">{{ erro.sintoma }}</dd>
+      <dt class="col-sm-3">Causa</dt><dd class="col-sm-9">{{ erro.causa }}</dd>
+      <dt class="col-sm-3">Solução de contorno</dt><dd class="col-sm-9 fw-semibold mb-0">{{ erro.solucao_contorno }}</dd>
+    </dl>
+  </div>
 </article>
-{% empty %}<p>Nenhum erro conhecido encontrado.</p>{% endfor %}
-{% if pagina.has_previous %}<a href="?q={{ q|urlencode }}&amp;page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
-{% if pagina.has_next %}<a href="?q={{ q|urlencode }}&amp;page={{ pagina.next_page_number }}">Próxima</a>{% endif %}
+{% empty %}
+<p class="text-body-secondary">Nenhum erro conhecido encontrado.</p>
+{% endfor %}
+
+{% if pagina.has_previous or pagina.has_next %}
+<nav aria-label="Paginação" class="d-flex gap-2">
+  {% if pagina.has_previous %}<a class="btn btn-outline-secondary btn-sm" href="?q={{ q|urlencode }}&amp;page={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+  {% if pagina.has_next %}<a class="btn btn-outline-secondary btn-sm" href="?q={{ q|urlencode }}&amp;page={{ pagina.next_page_number }}">Próxima</a>{% endif %}
+</nav>
+{% endif %}
 {% endblock %}
