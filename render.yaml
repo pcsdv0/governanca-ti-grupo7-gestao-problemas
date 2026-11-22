@@ -1,6 +1,6 @@
 # Blueprint do Render (https://render.com/docs/blueprint-spec).
 # ATENÇÃO: o PostgreSQL gratuito expira 30 dias após a criação.
-# Só aplicar este blueprint por volta de 28/10/2026 (ver README e docs/decisoes.md).
+# Aplicado em 22/11/2026: https://gestao-problemas.onrender.com (ver README e docs/decisoes.md).
 databases:
   - name: gestao-problemas-db
     plan: free

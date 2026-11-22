@@ -19,6 +19,7 @@ Registro leve: uma linha por decisão, com data e motivo. Decisões novas entram
 | 17/10/2026 | Fuso horário `America/Recife` e idioma `pt-br` | Público e banca em Pernambuco. |
 | 17/10/2026 | Nomes das funções F2 a F6 deduzidos do plano de tarefas (a validar com o grupo) | Só a F1 foi definida formalmente. |
 | 17/10/2026 | Configuração do GitHub (repositório, labels, milestones, issues) feita pelo script `scripts/configurar_github.py` | Repetível e sem retrabalho manual; o script pula o que já existe e não apaga nada. |
+| 22/11/2026 | Publicação no Render feita em 22/11/2026 (e não em 28/10), a partir da `main`: <https://gestao-problemas.onrender.com>. Administrador do `/admin` não criado no deploy (variáveis `DJANGO_SUPERUSER_*` em branco) | O banco gratuito, criado em 22/11, vale até por volta de 22/12 e cobre a entrega (23/11) e a apresentação (27/11). O sistema é demonstrado com os usuários de demonstração. |
 
 ## Implementação F2 — 08/11/2026
 

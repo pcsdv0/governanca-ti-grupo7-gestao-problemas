@@ -2,6 +2,8 @@
 
 Sistema web de **Gestão de Problemas** baseado no ITIL 4 e no COBIT 2019 (DSS02 - Gerenciar solicitações de serviço e incidentes; DSS03 - Gerenciar problemas). Projeto da disciplina de Governança de TI, 6º período, UNINASSAU.
 
+**Sistema publicado:** <https://gestao-problemas.onrender.com> (usuários de demonstração na seção [Dados de demonstração](#dados-de-demonstração); senha `demo1234`). No plano gratuito, o primeiro acesso após a hibernação pode levar cerca de 1 minuto.
+
 > **Versão final do backend.** As rotas de Problemas, Ações Corretivas, busca na KEDB e indicadores estão ativas. Após atualizar uma instalação do MVP, execute `python manage.py migrate` para adicionar a validação da solução aos problemas e ao histórico. Problemas já encerrados conservam seus registros.
 
 ## O problema que resolvemos
@@ -201,11 +203,11 @@ O GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) roda lin
 
 O deploy usa o blueprint [render.yaml](render.yaml) (serviço web + PostgreSQL gratuitos) e o script [build.sh](build.sh), que instala as dependências, coleta os estáticos, aplica as migrations e cria o administrador.
 
-> **Só criar o banco e o serviço por volta de 28/10/2026.** O PostgreSQL gratuito do Render expira 30 dias após a criação.
+> **Publicado em 22/11/2026** em <https://gestao-problemas.onrender.com>, a partir da branch `main`. O PostgreSQL gratuito do Render expira 30 dias após a criação (por volta de 22/12/2026), depois da apresentação de 27/11.
 
 1. Entre em <https://dashboard.render.com> com a conta do GitHub.
 2. **New → Blueprint**, escolha este repositório e a branch `main`.
-3. O Render lê o `render.yaml` e pede os valores de `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL` e `DJANGO_SUPERUSER_PASSWORD` (o administrador). Preencha e confirme.
+3. O Render lê o `render.yaml` e pede os valores de `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL` e `DJANGO_SUPERUSER_PASSWORD` (o administrador do `/admin`). São opcionais: em branco, o deploy funciona com os usuários de demonstração, e o administrador pode ser criado depois preenchendo as variáveis em **Environment**.
 4. Aguarde o build. O endereço fica no formato `https://gestao-problemas.onrender.com` (ou com um sufixo, se o nome estiver em uso).
 5. A cada push na `main` o Render faz o deploy de novo automaticamente.
 
