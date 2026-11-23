@@ -195,21 +195,21 @@ class Command(BaseCommand):
                 usuario=carla,
                 problema_id=p1.pk,
                 descricao="Fechar conexões em caso de exceção",
-                prazo=(agora - timedelta(days=1)).date(),
+                prazo=timezone.localdate(agora - timedelta(days=1)),
                 responsavel_id=carla.pk,
             )
             a2 = criar_acao(
                 usuario=marcos,
                 problema_id=p1.pk,
                 descricao="Aumentar o limite do pool de 20 para 60",
-                prazo=(agora + timedelta(days=2)).date(),
+                prazo=timezone.localdate(agora + timedelta(days=2)),
                 responsavel_id=rafael.pk,
             )
             criar_acao(
                 usuario=carla,
                 problema_id=p1.pk,
                 descricao="Criar teste de carga para o pico de matrícula",
-                prazo=(agora + timedelta(days=5)).date(),
+                prazo=timezone.localdate(agora + timedelta(days=5)),
                 responsavel_id=carla.pk,
             )
         with em(3.9):
@@ -317,7 +317,7 @@ class Command(BaseCommand):
                 usuario=rafael,
                 problema_id=p3.pk,
                 descricao="Ativar alerta automático de cota em 80%",
-                prazo=(agora - timedelta(days=14)).date(),
+                prazo=timezone.localdate(agora - timedelta(days=14)),
                 responsavel_id=rafael.pk,
             )
         with em(17.9):

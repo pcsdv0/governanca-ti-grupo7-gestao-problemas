@@ -1,14 +1,19 @@
 {% extends "base.html" %}
+{% load farol_tags %}
 
 {% block titulo %}Incidentes{% endblock %}
 
 {% block conteudo %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Incidentes</h1>
+  <div>
+    <h1 class="h3 mb-1">Incidentes</h1>
+    <p class="text-body-secondary mb-0">Ocorrências registradas pelo Suporte (Gestão de Incidentes, COBIT DSS02)</p>
+  </div>
   {% if pode_cadastrar %}
   <a class="btn btn-primary" href="{% url 'incidentes:cadastrar' %}">Registrar Incidente</a>
   {% endif %}
 </div>
+{% include "farol/incidente_problema.html" with destaque="incidente" %}
 <form method="get" class="card card-body mb-3">
   <p class="small text-body-secondary">O período inclui os dias inicial e final completos (America/Recife).</p>
   {{ form.non_field_errors }}
@@ -31,6 +36,7 @@
 {% if form.errors %}
 <div class="alert alert-danger" role="alert">Confira os filtros para consultar os incidentes.</div>
 {% elif incidentes %}
+{% farol_legenda "incidente" %}
 <div class="table-responsive">
   <table class="table table-striped align-middle">
     <thead>
@@ -39,6 +45,7 @@
         <th scope="col">Ocorrência</th>
         <th scope="col">Impacto</th>
         <th scope="col">Sistema afetado</th>
+        <th scope="col">Problema (causa)</th>
         <th scope="col">Registrado por</th>
         <th scope="col">Ações</th>
       </tr>
@@ -48,8 +55,16 @@
       <tr>
         <td><strong>{{ incidente.titulo }}</strong><br>{{ incidente.descricao|linebreaksbr }}</td>
         <td>{{ incidente.data_ocorrencia|date:"d/m/Y H:i:s" }}</td>
-        <td>{{ incidente.get_impacto_display }}</td>
+        <td>{% farol_selo incidente.impacto|farol_impacto %}</td>
         <td>{{ incidente.sistema }}</td>
+        <td>
+          {% if incidente.problema %}
+          <a href="{% url 'problemas:detalhe' incidente.problema_id %}" class="text-decoration-none">#{{ incidente.problema_id }} {{ incidente.problema.titulo|truncatechars:40 }}</a><br>
+          {% farol_selo incidente.problema.status|farol_status %}
+          {% else %}
+          <span class="text-body-secondary">Sem Problema vinculado</span>
+          {% endif %}
+        </td>
         <td>{{ incidente.registrado_por }}</td>
         <td>
           {% if incidente.pode_editar %}

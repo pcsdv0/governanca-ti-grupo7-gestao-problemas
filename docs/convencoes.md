@@ -94,3 +94,18 @@ No código os nomes de classe não levam acento (`AcaoCorretiva`, `HistoricoStat
 ## Testes que protegem estes nomes
 
 Os testes `contas/tests.py`, `incidentes/tests.py`, `problemas/tests.py` e `acoes/tests.py` comparam as choices do código com as tabelas acima. Se alguém alterar um nome só no código, o CI falha.
+
+## Farol (cores de situação)
+
+Regras em `problemas/farol.py` (fonte única para telas, dashboard e testes). A cor sempre aparece com ícone e texto.
+
+| Onde | Vermelho | Amarelo | Verde |
+|---|---|---|---|
+| Status do Problema | Registrado, Em investigação (causa desconhecida) | Erro conhecido, Em correção (causa conhecida, em tratamento) | Resolvido, Encerrado (solução aplicada) |
+| Impacto do Incidente / Prioridade do Problema | Alto / Alta | Médio / Média | Baixo / Baixa |
+| Prazo da Ação Corretiva | Atrasada | Vence em até 2 dias | No prazo ou Concluída |
+| Problemas em aberto (dashboard) | Há Problema sem causa conhecida | Só há Problemas em tratamento | Nenhum em aberto |
+| Tempo médio de resolução | Acima de 168 h | De 72 h a 168 h | Até 72 h (meta) |
+| Ações concluídas no prazo | Abaixo de 50% | De 50% a 79% | 80% ou mais (meta) |
+| Problemas reincidentes | 1 ou mais | — | 0 |
+| Situação do Sistema | Alerta de recorrência | Problema em aberto | Estável |
