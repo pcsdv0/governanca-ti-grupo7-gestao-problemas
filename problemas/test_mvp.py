@@ -579,7 +579,7 @@ class BackendMvpTests(TestCase):
         self.assertGreater(quantidade, 0)
         self.assertEqual(resposta.context["problema"].quantidade_incidentes, quantidade)
         self.assertContains(resposta, f'<span id="contagem-ocorrencias">{quantidade}</span>')
-        self.assertContains(resposta, f"Incidentes vinculados ({quantidade})")
+        self.assertContains(resposta, f"Chamados reunidos ({quantidade})")
 
     def test_encerramento_revalida_acao_criada_apos_validacao_do_formulario(self):
         self.resolver()

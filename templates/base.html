@@ -84,12 +84,12 @@
 
             <a href="{% url 'incidentes:listar' %}" class="menu-link">
               <i class="bi bi-exclamation-triangle"></i>
-              <span>Incidentes</span>
+              <span>Chamados <small class="opacity-75">(Incidentes)</small></span>
             </a>
 
             <a href="{% url 'problemas:listar' %}" class="menu-link">
               <i class="bi bi-clipboard-check"></i>
-              <span>Problemas</span>
+              <span>Problemas <small class="opacity-75">(causa raiz)</small></span>
             </a>
 
             {% if user.perfil == 'SUPORTE' or user.perfil == 'DESENVOLVEDOR' or user.is_superuser %}

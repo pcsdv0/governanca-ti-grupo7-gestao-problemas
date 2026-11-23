@@ -109,3 +109,12 @@ Regras em `problemas/farol.py` (fonte única para telas, dashboard e testes). A 
 | Ações concluídas no prazo | Abaixo de 50% | De 50% a 79% | 80% ou mais (meta) |
 | Problemas reincidentes | 1 ou mais | — | 0 |
 | Situação do Sistema | Alerta de recorrência | Problema em aberto | Estável |
+
+## Nomes na interface (linguagem do dia a dia)
+
+Para que a diferença entre Incidente e Problema fique clara para quem usa o sistema, as telas mostram um nome do dia a dia ao lado do termo do ITIL 4. Os nomes das entidades, dos status e do código continuam os desta convenção.
+
+| Termo ITIL (documentação, código e banco) | Como aparece nas telas |
+|---|---|
+| Incidente | Chamado (Incidente); "Abrir chamado"; "Chamados reunidos" no Problema |
+| Problema | Problema (causa raiz) |

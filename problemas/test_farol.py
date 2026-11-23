@@ -128,11 +128,16 @@ class FarolNasTelasTests(TestCase):
     def test_listas_mostram_farol_e_explicacao(self):
         self.client.force_login(self.suporte)
         incidentes = self.client.get(reverse("incidentes:listar"))
-        self.assertContains(incidentes, "Incidente = o que aconteceu")
-        self.assertContains(incidentes, "Problema (causa)")
+        self.assertContains(incidentes, "Chamado (Incidente) = o que aconteceu")
+        self.assertContains(incidentes, "Problema (causa raiz)")
         self.assertContains(incidentes, 'data-farol="vermelho"')
+        # Nome do dia a dia ao lado do termo ITIL: Chamado (Incidente) e Problema (causa raiz)
+        self.assertContains(incidentes, "Chamados <small")
+        self.assertContains(incidentes, "(Incidentes)")
+        self.assertContains(incidentes, "Problemas <small")
+        self.assertContains(incidentes, "Abrir chamado")
         problemas = self.client.get(reverse("problemas:listar"))
-        self.assertContains(problemas, "Problema = por que acontece")
+        self.assertContains(problemas, "Problema (causa raiz) = por que acontece")
         self.assertContains(problemas, "Como ler as cores")
 
     def test_dashboard_mostra_farol_dos_indicadores(self):

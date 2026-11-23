@@ -143,7 +143,7 @@ def vincular(request, pk):
         pk,
         VincularIncidentesForm,
         services.vincular_incidentes,
-        "Vincular Incidentes",
+        "Vincular chamados (Incidentes)",
     )
 
 
