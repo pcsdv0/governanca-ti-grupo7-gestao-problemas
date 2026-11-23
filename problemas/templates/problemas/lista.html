@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load farol_tags %}
 
 {% block titulo %}Problemas{% endblock %}
 
@@ -11,7 +12,7 @@
   <div>
     <h1 class="h3 mb-1">Problemas</h1>
     <p class="text-body-secondary mb-0">
-      Acompanhamento dos problemas registrados no sistema
+      Causas de Incidentes recorrentes em investigação e correção (Gestão de Problemas, COBIT DSS03)
     </p>
   </div>
 
@@ -26,6 +27,9 @@
 </div>
 
 
+{% include "farol/incidente_problema.html" with destaque="problema" %}
+{% farol_legenda "problema" %}
+
 <div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
@@ -33,6 +37,7 @@
         <tr>
           <th>Problema</th>
           <th>Sistema</th>
+          <th>Incidentes</th>
           <th>Status</th>
           <th>Prioridade</th>
           <th>Responsável</th>
@@ -52,15 +57,11 @@
 
           <td>{{ problema.sistema }}</td>
 
-          <td>
-            <span class="badge bg-secondary">
-              {{ problema.get_status_display }}
-            </span>
-          </td>
+          <td>{{ problema.quantidade_incidentes }}</td>
 
-          <td>
-            {{ problema.get_prioridade_display|default:"Não definida" }}
-          </td>
+          <td>{% farol_selo problema.status|farol_status %}</td>
+
+          <td>{% farol_selo problema.prioridade|farol_prioridade %}</td>
 
           <td>
             {{ problema.responsavel|default:"Não atribuído" }}
@@ -76,7 +77,7 @@
 
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center text-body-secondary py-4">
+          <td colspan="7" class="text-center text-body-secondary py-4">
             Nenhum problema registrado.
           </td>
         </tr>

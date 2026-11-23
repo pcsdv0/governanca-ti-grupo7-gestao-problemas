@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load farol_tags %}
 
 {% block titulo %}Detalhes do Problema{% endblock %}
 
@@ -20,37 +21,8 @@
     </p>
   </div>
 
-<!-- Status do problema com cores -->
-{% if problema.status == "REGISTRADO" %}
-  <span class="badge bg-secondary fs-6">
-    {{ problema.get_status_display }}
-  </span>
-
-{% elif problema.status == "EM_INVESTIGACAO" %}
-  <span class="badge bg-primary fs-6">
-    {{ problema.get_status_display }}
-  </span>
-
-{% elif problema.status == "ERRO_CONHECIDO" %}
-  <span class="badge fs-6" style="background-color: #6f42c1;">
-    {{ problema.get_status_display }}
-  </span>
-
-{% elif problema.status == "EM_CORRECAO" %}
-  <span class="badge fs-6" style="background-color: #fd7e14; color: #212529;">
-    {{ problema.get_status_display }}
-  </span>
-
-{% elif problema.status == "RESOLVIDO" %}
-  <span class="badge bg-success fs-6">
-    {{ problema.get_status_display }}
-  </span>
-
-{% else %}
-  <span class="badge bg-secondary fs-6">
-    {{ problema.get_status_display }}
-  </span>
-{% endif %}
+<!-- Status do problema no farol (regras em problemas/farol.py) -->
+{% farol_selo problema.status|farol_status "lg" %}
 
 </div>
 
@@ -84,6 +56,9 @@
   {% endif %}
 </div>
 
+<!-- Etapas do ciclo de vida (farol na etapa atual) -->
+{% trilha_status problema %}
+
 <!-- Informações gerais -->
 <div class="card shadow-sm mb-4">
   <div class="card-header bg-white fw-semibold">
@@ -101,7 +76,7 @@
 
       <div class="col-md-4 mb-2">
         <strong>Prioridade:</strong><br>
-        {{ problema.get_prioridade_display|default:"Não definida" }}
+        {% farol_selo problema.prioridade|farol_prioridade %}
       </div>
 
       <div class="col-md-4 mb-2">
@@ -114,6 +89,7 @@
         <strong>Ocorrências:</strong><br>
         <span id="contagem-ocorrencias">{{ problema.quantidade_incidentes }}</span>
         Incidente{{ problema.quantidade_incidentes|pluralize }} vinculado{{ problema.quantidade_incidentes|pluralize }}
+        <div class="small text-body-secondary">Cada Incidente foi uma ocorrência; este Problema investiga a causa comum.</div>
       </div>
     </div>
   </div>
@@ -220,17 +196,7 @@
                 </td>
 
                 <td>
-                  {% if incidente.get_impacto_display == "Alto" %}
-                    <span class="badge bg-danger">Alto</span>
-                  {% elif incidente.get_impacto_display == "Médio" %}
-                    <span class="badge bg-warning text-dark">Médio</span>
-                  {% elif incidente.get_impacto_display == "Baixo" %}
-                    <span class="badge bg-success">Baixo</span>
-                  {% else %}
-                    <span class="badge bg-secondary">
-                      {{ incidente.get_impacto_display }}
-                    </span>
-                  {% endif %}
+                  {% farol_selo incidente.impacto|farol_impacto %}
                 </td>
 
                 <td>{{ incidente.registrado_por }}</td>
@@ -379,26 +345,13 @@
 
                 <td>{{ acao.responsavel }}</td>
 
-                <td>{{ acao.prazo|date:"d/m/Y" }}</td>
+                <td>
+                  {{ acao.prazo|date:"d/m/Y" }}<br>
+                  {% farol_selo acao|farol_prazo %}
+                </td>
 
                 <td>
-                  {% if acao.get_status_display == "Concluída" %}
-                    <span class="badge bg-success">
-                      Concluída
-                    </span>
-                  {% elif acao.get_status_display == "Em andamento" %}
-                    <span class="badge bg-warning text-dark">
-                      Em andamento
-                    </span>
-                  {% elif acao.get_status_display == "Aberta" %}
-                    <span class="badge bg-secondary">
-                      Aberta
-                    </span>
-                  {% else %}
-                    <span class="badge bg-secondary">
-                      {{ acao.get_status_display }}
-                    </span>
-                  {% endif %}
+                  {{ acao.get_status_display }}
                 </td>
 
                 <td>

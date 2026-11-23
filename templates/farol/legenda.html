@@ -1,0 +1,16 @@
+<div class="farol-legenda small text-body-secondary d-flex flex-wrap align-items-center gap-3 mb-3">
+  <strong class="text-body">Como ler as cores:</strong>
+  {% if contexto == "incidente" %}
+    <span><span class="farol-ponto farol-vermelho"></span> Impacto alto</span>
+    <span><span class="farol-ponto farol-amarelo"></span> Impacto médio</span>
+    <span><span class="farol-ponto farol-verde"></span> Impacto baixo</span>
+  {% elif contexto == "dashboard" %}
+    <span><span class="farol-ponto farol-vermelho"></span> Exige ação agora</span>
+    <span><span class="farol-ponto farol-amarelo"></span> Em atenção ou em tratamento</span>
+    <span><span class="farol-ponto farol-verde"></span> Sob controle ou dentro da meta</span>
+  {% else %}
+    <span><span class="farol-ponto farol-vermelho"></span> Causa desconhecida (Registrado, Em investigação)</span>
+    <span><span class="farol-ponto farol-amarelo"></span> Causa conhecida, em tratamento (Erro conhecido, Em correção)</span>
+    <span><span class="farol-ponto farol-verde"></span> Solução aplicada (Resolvido, Encerrado)</span>
+  {% endif %}
+</div>
