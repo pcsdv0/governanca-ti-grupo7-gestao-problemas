@@ -24,7 +24,7 @@
         </p>
 
         <p class="text-body-secondary mb-0">
-          Gerencie incidentes, acompanhe problemas recorrentes
+          Registre chamados, investigue a causa dos problemas recorrentes
           e contribua para a melhoria contínua dos serviços de TI.
         </p>
       </div>
@@ -43,7 +43,7 @@
   </div>
 </div>
 
-<!-- Como o processo funciona: do Incidente à causa eliminada -->
+<!-- Como o processo funciona: do chamado à causa eliminada -->
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-body">
     <h2 class="h5 fw-bold mb-3">Como funciona</h2>
@@ -51,13 +51,13 @@
       <div class="col-md-4">
         <div class="d-flex gap-2 align-items-start">
           <span class="farol farol-vermelho">1</span>
-          <div><strong>Incidente</strong><br><span class="small text-body-secondary">O Suporte registra cada ocorrência e restaura o serviço.</span></div>
+          <div><strong>Chamado (Incidente)</strong><br><span class="small text-body-secondary">O Suporte abre um chamado para cada ocorrência e restaura o serviço.</span></div>
         </div>
       </div>
       <div class="col-md-4">
         <div class="d-flex gap-2 align-items-start">
           <span class="farol farol-amarelo">2</span>
-          <div><strong>Problema</strong><br><span class="small text-body-secondary">Quando a falha se repete, os Incidentes viram um Problema e o Desenvolvedor investiga a causa.</span></div>
+          <div><strong>Problema (causa raiz)</strong><br><span class="small text-body-secondary">Quando a falha se repete, os chamados são reunidos em um Problema e o Desenvolvedor investiga a causa.</span></div>
         </div>
       </div>
       <div class="col-md-4">
@@ -82,7 +82,7 @@
 
 <div class="row g-2">
 
-  <!-- Incidentes -->
+  <!-- Chamados (Incidentes) -->
   <div class="col-12 col-md-6 col-xl-4">
     <div class="card h-100 border-0 shadow-sm">
       <div class="card-body p-3 d-flex flex-column">
@@ -94,16 +94,16 @@
           </span>
         </div>
 
-        <h3 class="h5 fw-bold">Incidentes</h3>
+        <h3 class="h5 fw-bold">Chamados <span class="small fw-normal text-body-secondary">(Incidentes)</span></h3>
 
         <p class="text-body-secondary">
-          Consulte os incidentes registrados e acompanhe as
+          Consulte os chamados registrados e acompanhe as
           ocorrências dos sistemas.
         </p>
 
         <a href="{% url 'incidentes:listar' %}"
            class="btn btn-outline-primary mt-auto">
-          Consultar incidentes
+          Consultar chamados
           <i class="bi bi-arrow-right ms-1"></i>
         </a>
       </div>

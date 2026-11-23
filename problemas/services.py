@@ -43,7 +43,7 @@ def _selecionar_incidentes(incidentes_ids):
         raise ValidationError("Selecione pelo menos um Incidente.")
     incidentes = list(Incidente.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
     if len(incidentes) != len(ids):
-        raise ValidationError("Um dos Incidentes selecionados não existe mais.")
+        raise ValidationError("Um dos chamados (Incidentes) selecionados não existe mais.")
     return incidentes
 
 
@@ -51,10 +51,12 @@ def _validar_vinculo(incidentes, sistema_id, problema_id=None):
     for incidente in incidentes:
         if incidente.sistema_id != sistema_id:
             raise ValidationError(
-                "Todos os Incidentes devem pertencer ao mesmo Sistema do Problema."
+                "Todos os chamados (Incidentes) devem pertencer ao mesmo Sistema do Problema."
             )
         if incidente.problema_id and incidente.problema_id != problema_id:
-            raise ValidationError("Um dos Incidentes já está vinculado a outro Problema.")
+            raise ValidationError(
+                "Um dos chamados (Incidentes) já está vinculado a outro Problema."
+            )
 
 
 def _salvar(objeto, usuario):

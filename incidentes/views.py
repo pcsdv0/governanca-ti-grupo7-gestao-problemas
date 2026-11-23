@@ -60,9 +60,11 @@ def cadastrar(request):
             incidente = form.save(commit=False)
             incidente.registrado_por = request.user
             incidente.save()
-        messages.success(request, "Incidente registrado com sucesso.")
+        messages.success(request, "Chamado registrado com sucesso.")
         return redirect("incidentes:listar")
-    return render(request, "incidentes/form.html", {"form": form, "titulo": "Registrar Incidente"})
+    return render(
+        request, "incidentes/form.html", {"form": form, "titulo": "Abrir chamado (Incidente)"}
+    )
 
 
 @perfil_requerido(Perfil.SUPORTE, Perfil.GESTOR_TI)
@@ -74,7 +76,7 @@ def editar(request, pk):
         queryset = queryset.select_for_update()
     incidente = get_object_or_404(queryset, pk=pk)
     if not pode_editar_incidente(request.user, incidente):
-        raise PermissionDenied("Você não tem permissão para editar este incidente.")
+        raise PermissionDenied("Você não tem permissão para editar este chamado.")
     form = IncidenteForm(
         request.POST if request.method == "POST" else None,
         instance=incidente,
@@ -82,6 +84,8 @@ def editar(request, pk):
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():
             form.save()
-        messages.success(request, "Incidente atualizado com sucesso.")
+        messages.success(request, "Chamado atualizado com sucesso.")
         return redirect("incidentes:listar")
-    return render(request, "incidentes/form.html", {"form": form, "titulo": "Editar Incidente"})
+    return render(
+        request, "incidentes/form.html", {"form": form, "titulo": "Editar chamado (Incidente)"}
+    )
