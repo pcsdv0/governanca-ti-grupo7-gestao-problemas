@@ -67,7 +67,8 @@ class PainelTests(TestCase):
         self.assertEqual(por_sistema[self.sistema.pk].total_incidentes, 6)
         self.assertEqual(por_sistema[self.sistema.pk].total_problemas, 1)
         self.assertEqual(
-            dados["por_status"][0], {"nome": "Registrado", "problemas": 1, "incidentes": 3}
+            dados["por_status"][0],
+            {"nome": "Registrado", "cor": "vermelho", "problemas": 1, "incidentes": 3},
         )
         self.assertEqual(dados["por_problema"].get().incidentes_vinculados, 3)
         self.assertEqual(dados["incidentes_sem_problema"], 4)

@@ -18,7 +18,7 @@ from .permissoes import pode_editar_incidente
 )
 @require_GET
 def listar(request):
-    incidentes = Incidente.objects.select_related("sistema", "registrado_por")
+    incidentes = Incidente.objects.select_related("sistema", "registrado_por", "problema")
     sistemas = Sistema.objects.all()
     if not request.user.is_superuser and request.user.perfil == Perfil.RESPONSAVEL_SISTEMA:
         incidentes = incidentes.filter(sistema__responsavel=request.user)

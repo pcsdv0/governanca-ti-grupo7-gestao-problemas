@@ -1,0 +1,20 @@
+<!-- Trilha do ciclo de vida do Problema (ITIL 4): onde ele está e o que falta. -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <strong>Etapas do Problema</strong>
+      <span class="small text-body-secondary">{{ farol.significado }}</span>
+    </div>
+    <ol class="trilha-status" aria-label="Etapas do Problema">
+      {% for etapa in etapas %}
+        <li class="trilha-etapa trilha-{{ etapa.situacao }} trilha-cor-{{ etapa.cor }}"
+            {% if etapa.situacao == "atual" %}aria-current="step"{% endif %}>
+          <span class="trilha-marcador">
+            {% if etapa.situacao == "concluida" %}<i class="bi bi-check-lg" aria-hidden="true"></i>{% else %}{{ etapa.numero }}{% endif %}
+          </span>
+          <span class="trilha-rotulo">{{ etapa.rotulo }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>

@@ -153,3 +153,90 @@
 }
 .area-principal form select[multiple]:not(.form-select) { min-height: 10rem; }
 .area-principal form .input-group > input { width: 1%; }
+
+/* ===================================================================
+   Farol de governança (verde, amarelo, vermelho) – regras em problemas/farol.py.
+   A cor sempre aparece com ícone e texto, para não depender só da cor.
+   =================================================================== */
+:root {
+  --farol-vermelho: #b42318;
+  --farol-amarelo: #f5c518;
+  --farol-verde: #1e7d45;
+}
+
+.farol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.farol-lg { font-size: 0.95rem; padding: 0.4rem 0.85rem; }
+.farol-vermelho { background: var(--farol-vermelho); color: #fff; }
+.farol-amarelo { background: var(--farol-amarelo); color: #3d2e00; }
+.farol-verde { background: var(--farol-verde); color: #fff; }
+.farol-sem-dados { background: #e9ecef; color: #495057; }
+
+/* Ponto colorido da legenda */
+.farol-ponto {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  vertical-align: -0.05rem;
+  margin-right: 0.2rem;
+}
+
+/* Barra lateral colorida nos cartões de indicador */
+.card-farol { border-left: 6px solid #dee2e6 !important; }
+.card-farol-vermelho { border-left-color: var(--farol-vermelho) !important; }
+.card-farol-amarelo { border-left-color: var(--farol-amarelo) !important; }
+.card-farol-verde { border-left-color: var(--farol-verde) !important; }
+
+/* Trilha de etapas do Problema */
+.trilha-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: etapa;
+}
+.trilha-etapa {
+  flex: 1 1 8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+.trilha-marcador {
+  flex: 0 0 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: #dee2e6;
+  color: #495057;
+}
+.trilha-concluida { color: #212529; background: #fff; }
+.trilha-concluida .trilha-marcador { background: #6c757d; color: #fff; }
+.trilha-atual { color: #212529; background: #fff; font-weight: 700; box-shadow: 0 0 0 2px currentColor inset; }
+.trilha-atual.trilha-cor-vermelho { color: var(--farol-vermelho); }
+.trilha-atual.trilha-cor-amarelo { color: #8a6d00; }
+.trilha-atual.trilha-cor-verde { color: var(--farol-verde); }
+.trilha-atual.trilha-cor-vermelho .trilha-marcador { background: var(--farol-vermelho); color: #fff; }
+.trilha-atual.trilha-cor-amarelo .trilha-marcador { background: var(--farol-amarelo); color: #3d2e00; }
+.trilha-atual.trilha-cor-verde .trilha-marcador { background: var(--farol-verde); color: #fff; }
+.trilha-atual .trilha-rotulo { color: #212529; }

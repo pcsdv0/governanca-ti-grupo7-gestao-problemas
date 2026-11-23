@@ -1,0 +1,6 @@
+<span class="farol farol-{{ farol.cor }}{% if tamanho %} farol-{{ tamanho }}{% endif %}"
+      title="{{ farol.significado }}" data-farol="{{ farol.cor }}">
+  <i class="bi {{ farol.icone }}" aria-hidden="true"></i>
+  {{ farol.texto }}
+  <span class="visually-hidden">({{ farol.significado }})</span>
+</span>

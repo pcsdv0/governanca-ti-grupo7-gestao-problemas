@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load farol_tags %}
 
 {% block titulo %}Dashboard de Governança{% endblock %}
 
@@ -17,11 +18,13 @@
   </span>
 </div>
 
-<!-- Indicadores principais -->
+{% farol_legenda "dashboard" %}
+
+<!-- Indicadores principais, cada um com o seu farol (regras e metas em problemas/farol.py) -->
 <div class="row g-3 mb-4">
 
   <div class="col-12 col-sm-6 col-xl-3">
-    <div class="card h-100 border-0 shadow-sm">
+    <div class="card h-100 border-0 shadow-sm card-farol card-farol-{{ farol_abertos.cor }}">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-body-secondary small">Problemas em aberto</span>
@@ -29,12 +32,14 @@
         </div>
         <h2 class="fw-bold mt-3 mb-1">{{ problemas_abertos }}</h2>
         <span class="small text-body-secondary">Aguardando resolução</span>
+        <div class="mt-2">{% farol_selo farol_abertos %}</div>
+        <div class="small text-body-secondary mt-1">{{ farol_abertos.significado }}</div>
       </div>
     </div>
   </div>
 
   <div class="col-12 col-sm-6 col-xl-3">
-    <div class="card h-100 border-0 shadow-sm">
+    <div class="card h-100 border-0 shadow-sm card-farol card-farol-{{ farol_tempo.cor }}">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-body-secondary small">Tempo médio de resolução</span>
@@ -48,12 +53,14 @@
           {% endif %}
         </h2>
         <span class="small text-body-secondary">Do registro à resolução</span>
+        <div class="mt-2">{% farol_selo farol_tempo %}</div>
+        <div class="small text-body-secondary mt-1">{{ farol_tempo.significado }}</div>
       </div>
     </div>
   </div>
 
   <div class="col-12 col-sm-6 col-xl-3">
-    <div class="card h-100 border-0 shadow-sm">
+    <div class="card h-100 border-0 shadow-sm card-farol card-farol-{{ farol_prazo.cor }}">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-body-secondary small">Ações concluídas no prazo</span>
@@ -67,12 +74,14 @@
           {% endif %}
         </h2>
         <span class="small text-body-secondary">Cumprimento dos prazos</span>
+        <div class="mt-2">{% farol_selo farol_prazo %}</div>
+        <div class="small text-body-secondary mt-1">{{ farol_prazo.significado }}</div>
       </div>
     </div>
   </div>
 
   <div class="col-12 col-sm-6 col-xl-3">
-    <div class="card h-100 border-0 shadow-sm">
+    <div class="card h-100 border-0 shadow-sm card-farol card-farol-{{ farol_reincidencia.cor }}">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-body-secondary small">Problemas reincidentes</span>
@@ -82,6 +91,8 @@
         <span class="small text-body-secondary">
           Novo incidente após encerramento
         </span>
+        <div class="mt-2">{% farol_selo farol_reincidencia %}</div>
+        <div class="small text-body-secondary mt-1">{{ farol_reincidencia.significado }}</div>
       </div>
     </div>
   </div>
@@ -125,7 +136,7 @@
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-transparent py-3">
     <h5 class="fw-semibold mb-0">
-      <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+      <i class="bi bi-exclamation-octagon-fill me-2" style="color: var(--farol-vermelho)"></i>
       Alertas de recorrência
     </h5>
     <span class="small text-body-secondary">Últimos 30 dias</span>
@@ -148,7 +159,8 @@
                   {% endif %}
                 </p>
               </div>
-              <span class="badge text-bg-warning align-self-center">
+              <span class="farol farol-vermelho align-self-center" title="Três ou mais Incidentes semelhantes em 30 dias.">
+                <i class="bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
                 {{ alerta.quantidade }} incidentes
               </span>
             </div>
@@ -181,6 +193,7 @@
                 <th>Incidentes</th>
                 <th>Recorrentes</th>
                 <th>Problemas</th>
+                <th>Situação</th>
               </tr>
             </thead>
             <tbody>
@@ -190,10 +203,11 @@
                   <td>{{ sistema.total_incidentes }}</td>
                   <td>{{ sistema.incidentes_recorrentes }}</td>
                   <td>{{ sistema.total_problemas }}</td>
+                  <td>{% farol_selo sistema.farol %}</td>
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="4" class="text-center text-body-secondary">
+                  <td colspan="5" class="text-center text-body-secondary">
                     Nenhum sistema cadastrado.
                   </td>
                 </tr>
@@ -214,6 +228,7 @@
             <thead>
               <tr>
                 <th>Problema</th>
+                <th>Status</th>
                 <th>Incidentes</th>
               </tr>
             </thead>
@@ -226,6 +241,7 @@
                       {{ problema.titulo }}
                     </a>
                   </td>
+                  <td>{% farol_selo problema.status|farol_status %}</td>
                   <td>
                     <span class="badge text-bg-secondary">
                       {{ problema.incidentes_vinculados }}
@@ -234,7 +250,7 @@
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="2" class="text-center text-body-secondary">
+                  <td colspan="3" class="text-center text-body-secondary">
                     Nenhum problema registrado.
                   </td>
                 </tr>
@@ -267,6 +283,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const statusLabels = [
     {% for linha in por_status %}
       "{{ linha.nome|escapejs }}",
+    {% endfor %}
+  ];
+
+  const coresFarol = {
+    vermelho: "#b42318",
+    amarelo: "#f5c518",
+    verde: "#1e7d45"
+  };
+  const statusCores = [
+    {% for linha in por_status %}
+      coresFarol["{{ linha.cor }}"],
     {% endfor %}
   ];
 
@@ -304,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function () {
         datasets: [{
           label: "Problemas",
           data: statusProblemas,
-          backgroundColor: "#2563eb",
+          backgroundColor: statusCores,
           borderRadius: 5
         }]
       },

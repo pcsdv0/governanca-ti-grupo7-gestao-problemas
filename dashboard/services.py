@@ -9,6 +9,7 @@ from acoes.constantes import StatusAcaoCorretiva
 from acoes.models import AcaoCorretiva
 from contas.models import Perfil
 from incidentes.models import Incidente
+from problemas import farol
 from problemas.constantes import StatusProblema
 from problemas.models import HistoricoStatus, Problema
 from problemas.services import exigir_perfil
@@ -105,6 +106,13 @@ def indicadores(*, usuario, agora=None):
         Sistema.objects.annotate(
             total_incidentes=Count("incidentes", distinct=True),
             total_problemas=Count("problemas", distinct=True),
+            problemas_abertos=Count(
+                "problemas",
+                filter=~Q(
+                    problemas__status__in=[StatusProblema.RESOLVIDO, StatusProblema.ENCERRADO]
+                ),
+                distinct=True,
+            ),
         )
     )
     nomes = {s.pk: s.nome for s in sistemas}
@@ -115,6 +123,9 @@ def indicadores(*, usuario, agora=None):
             pk__in=[a["chave"] for a in alertas if a["tipo"] == "Problema"]
         ).values_list("pk", "titulo")
     )
+    com_alerta = {a["sistema_id"] for a in alertas}
+    for sistema in sistemas:
+        sistema.farol = farol.farol_sistema(sistema.pk in com_alerta, sistema.problemas_abertos)
     for alerta in alertas:
         alerta["sistema"] = nomes[alerta["sistema_id"]]
         # Rótulo legível para a tela: o título do Problema, ou o título comum dos Incidentes.
@@ -140,12 +151,14 @@ def indicadores(*, usuario, agora=None):
     status = [
         {
             "nome": nome,
+            "cor": farol.COR_STATUS[codigo],
             "problemas": por_status.get(codigo, 0),
             "incidentes": por_status_incidente.get(codigo, 0),
         }
         for codigo, nome in StatusProblema.choices
     ]
     tempo_medio, reincidentes = _resolucao_e_reincidencia(agora)
+    percentual_prazo = _percentual_acoes_no_prazo()
 
     return {
         "por_sistema": sistemas,
@@ -157,6 +170,11 @@ def indicadores(*, usuario, agora=None):
         - por_status.get(StatusProblema.RESOLVIDO, 0)
         - por_status.get(StatusProblema.ENCERRADO, 0),
         "tempo_medio_horas": tempo_medio,
-        "percentual_acoes_no_prazo": _percentual_acoes_no_prazo(),
+        "percentual_acoes_no_prazo": percentual_prazo,
         "problemas_reincidentes": reincidentes,
+        # Farol (verde, amarelo, vermelho) de cada indicador; regras em problemas/farol.py.
+        "farol_abertos": farol.farol_problemas_abertos(por_status),
+        "farol_tempo": farol.farol_tempo_medio(tempo_medio),
+        "farol_prazo": farol.farol_acoes_no_prazo(percentual_prazo),
+        "farol_reincidencia": farol.farol_reincidencia(reincidentes),
     }
