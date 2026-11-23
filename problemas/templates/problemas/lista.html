@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 {% load farol_tags %}
 
-{% block titulo %}Problemas{% endblock %}
+{% block titulo %}Problemas (causa raiz){% endblock %}
 
 {% block conteudo %}
 
@@ -10,9 +10,9 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
 
   <div>
-    <h1 class="h3 mb-1">Problemas</h1>
+    <h1 class="h3 mb-1">Problemas <span class="text-body-secondary fw-normal">(causa raiz)</span></h1>
     <p class="text-body-secondary mb-0">
-      Causas de Incidentes recorrentes em investigação e correção (Gestão de Problemas, COBIT DSS03)
+      Cada Problema reúne chamados repetidos e investiga a causa comum (Gestão de Problemas, COBIT DSS03)
     </p>
   </div>
 
@@ -37,7 +37,7 @@
         <tr>
           <th>Problema</th>
           <th>Sistema</th>
-          <th>Incidentes</th>
+          <th>Chamados</th>
           <th>Status</th>
           <th>Prioridade</th>
           <th>Responsável</th>

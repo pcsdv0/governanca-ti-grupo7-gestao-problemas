@@ -155,13 +155,13 @@ def farol_acoes_no_prazo(percentual):
 def farol_reincidencia(quantidade):
     if quantidade:
         return Farol(VERMELHO, "Reincidência", "A correção não eliminou a causa: reavaliar.")
-    return Farol(VERDE, "Sem reincidência", "Nenhum Incidente depois do encerramento.")
+    return Farol(VERDE, "Sem reincidência", "Nenhum chamado depois do encerramento.")
 
 
 def farol_sistema(tem_alerta, problemas_abertos):
     """Situação do Sistema no dashboard."""
     if tem_alerta:
-        return Farol(VERMELHO, "Recorrência", "Três ou mais Incidentes semelhantes em 30 dias.")
+        return Farol(VERMELHO, "Recorrência", "Três ou mais chamados semelhantes em 30 dias.")
     if problemas_abertos:
         return Farol(AMARELO, "Em tratamento", "Há Problema em aberto neste Sistema.")
     return Farol(VERDE, "Estável", "Sem recorrência nem Problema em aberto.")

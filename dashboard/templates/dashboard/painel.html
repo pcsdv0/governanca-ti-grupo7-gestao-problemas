@@ -89,7 +89,7 @@
         </div>
         <h2 class="fw-bold mt-3 mb-1">{{ problemas_reincidentes }}</h2>
         <span class="small text-body-secondary">
-          Novo incidente após encerramento
+          Novo chamado após o encerramento
         </span>
         <div class="mt-2">{% farol_selo farol_reincidencia %}</div>
         <div class="small text-body-secondary mt-1">{{ farol_reincidencia.significado }}</div>
@@ -119,7 +119,7 @@
   <div class="col-12 col-xl-6">
     <div class="card h-100 border-0 shadow-sm">
       <div class="card-body">
-        <h5 class="fw-semibold mb-1">Incidentes e problemas por sistema</h5>
+        <h5 class="fw-semibold mb-1">Chamados e problemas por sistema</h5>
         <p class="text-body-secondary small mb-3">
           Comparação dos registros entre os sistemas.
         </p>
@@ -155,13 +155,13 @@
                     Problema:
                     <a href="{% url 'problemas:detalhe' alerta.problema_id %}">{{ alerta.descricao }}</a>
                   {% else %}
-                    Incidentes com o mesmo título: “{{ alerta.descricao }}”
+                    Chamados com o mesmo título: “{{ alerta.descricao }}”
                   {% endif %}
                 </p>
               </div>
-              <span class="farol farol-vermelho align-self-center" title="Três ou mais Incidentes semelhantes em 30 dias.">
+              <span class="farol farol-vermelho align-self-center" title="Três ou mais chamados semelhantes em 30 dias.">
                 <i class="bi bi-exclamation-octagon-fill" aria-hidden="true"></i>
-                {{ alerta.quantidade }} incidentes
+                {{ alerta.quantidade }} chamados
               </span>
             </div>
           </div>
@@ -190,7 +190,7 @@
             <thead>
               <tr>
                 <th>Sistema</th>
-                <th>Incidentes</th>
+                <th>Chamados</th>
                 <th>Recorrentes</th>
                 <th>Problemas</th>
                 <th>Situação</th>
@@ -222,14 +222,14 @@
   <div class="col-12 col-xl-6">
     <div class="card h-100 border-0 shadow-sm">
       <div class="card-body">
-        <h5 class="fw-semibold mb-3">Problemas e incidentes vinculados</h5>
+        <h5 class="fw-semibold mb-3">Problemas e chamados reunidos</h5>
         <div class="table-responsive">
           <table class="table table-hover align-middle">
             <thead>
               <tr>
                 <th>Problema</th>
                 <th>Status</th>
-                <th>Incidentes</th>
+                <th>Chamados</th>
               </tr>
             </thead>
             <tbody>
@@ -265,7 +265,7 @@
 </div>
 
 <p class="text-body-secondary small mt-3 mb-0">
-  Incidentes sem problema vinculado: {{ incidentes_sem_problema }}
+  Chamados sem Problema vinculado: {{ incidentes_sem_problema }}
 </p>
 {% endblock %}
 
@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labels: sistemasLabels,
         datasets: [
           {
-            label: "Incidentes",
+            label: "Chamados",
             data: sistemasIncidentes,
             backgroundColor: "#0d9488",
             borderRadius: 5

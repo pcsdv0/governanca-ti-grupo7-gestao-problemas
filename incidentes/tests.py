@@ -109,7 +109,7 @@ class IncidenteTests(TestCase):
             follow=True,
         )
         self.assertRedirects(resposta, self.lista_url)
-        self.assertContains(resposta, "Incidente registrado com sucesso.")
+        self.assertContains(resposta, "Chamado registrado com sucesso.")
         criado = Incidente.objects.get(titulo=self.dados["titulo"])
         self.assertEqual(criado.descricao, self.dados["descricao"])
         self.assertEqual(criado.data_ocorrencia, self.ocorrencia)
@@ -140,7 +140,7 @@ class IncidenteTests(TestCase):
                     follow=True,
                 )
                 self.assertRedirects(resposta, self.lista_url)
-                self.assertContains(resposta, "Incidente atualizado com sucesso.")
+                self.assertContains(resposta, "Chamado atualizado com sucesso.")
                 self.incidente.refresh_from_db()
                 self.assertEqual(self.incidente.titulo, f"Corrigido por {editor.username}")
                 self.assertEqual(self.incidente.sistema, self.outro_sistema)
@@ -290,7 +290,7 @@ class IncidenteTests(TestCase):
         usuario = Usuario.objects.create_user("sem_sistema", perfil=Perfil.RESPONSAVEL_SISTEMA)
         self.client.force_login(usuario)
         resposta = self.client.get(self.lista_url)
-        self.assertContains(resposta, "Nenhum incidente encontrado.")
+        self.assertContains(resposta, "Nenhum chamado encontrado.")
         self.assertFalse(resposta.context["form"].fields["sistema"].queryset.exists())
 
     def test_links_de_acoes_respeitam_perfil_e_autoria(self):

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load farol_tags %}
 
-{% block titulo %}Incidentes{% endblock %}
+{% block titulo %}Chamados (Incidentes){% endblock %}
 
 {% block conteudo %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    <h1 class="h3 mb-1">Incidentes</h1>
-    <p class="text-body-secondary mb-0">Ocorrências registradas pelo Suporte (Gestão de Incidentes, COBIT DSS02)</p>
+    <h1 class="h3 mb-1">Chamados <span class="text-body-secondary fw-normal">(Incidentes)</span></h1>
+    <p class="text-body-secondary mb-0">Cada chamado é uma ocorrência registrada pelo Suporte (Gestão de Incidentes, COBIT DSS02)</p>
   </div>
   {% if pode_cadastrar %}
-  <a class="btn btn-primary" href="{% url 'incidentes:cadastrar' %}">Registrar Incidente</a>
+  <a class="btn btn-primary" href="{% url 'incidentes:cadastrar' %}">Abrir chamado</a>
   {% endif %}
 </div>
 {% include "farol/incidente_problema.html" with destaque="incidente" %}
@@ -34,18 +34,18 @@
   </div>
 </form>
 {% if form.errors %}
-<div class="alert alert-danger" role="alert">Confira os filtros para consultar os incidentes.</div>
+<div class="alert alert-danger" role="alert">Confira os filtros para consultar os chamados.</div>
 {% elif incidentes %}
 {% farol_legenda "incidente" %}
 <div class="table-responsive">
   <table class="table table-striped align-middle">
     <thead>
       <tr>
-        <th scope="col">Incidente</th>
+        <th scope="col">Chamado</th>
         <th scope="col">Ocorrência</th>
         <th scope="col">Impacto</th>
         <th scope="col">Sistema afetado</th>
-        <th scope="col">Problema (causa)</th>
+        <th scope="col">Problema (causa raiz)</th>
         <th scope="col">Registrado por</th>
         <th scope="col">Ações</th>
       </tr>
@@ -80,6 +80,6 @@
   </table>
 </div>
 {% else %}
-<p class="text-body-secondary">Nenhum incidente encontrado.</p>
+<p class="text-body-secondary">Nenhum chamado encontrado.</p>
 {% endif %}
 {% endblock %}

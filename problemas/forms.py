@@ -11,15 +11,15 @@ class AbrirProblemaForm(forms.Form):
     titulo = forms.CharField(label="Título", max_length=200)
     descricao = forms.CharField(label="Descrição", widget=forms.Textarea)
     incidentes = forms.ModelMultipleChoiceField(
-        label="Incidentes",
+        label="Chamados (Incidentes)",
         queryset=Incidente.objects.filter(problema__isnull=True),
-        help_text="Selecione um ou mais Incidentes do mesmo Sistema.",
+        help_text="Selecione um ou mais chamados do mesmo Sistema.",
     )
 
 
 class VincularIncidentesForm(forms.Form):
     incidentes = forms.ModelMultipleChoiceField(
-        label="Incidentes",
+        label="Chamados (Incidentes)",
         queryset=Incidente.objects.none(),
     )
 
